@@ -1,0 +1,109 @@
+<div webc:root="override" class="letter-buttons">
+  <script webc:type="js" webc:is="template">
+    const { letterSets } = words.en;
+    const selectedLetterSet =
+      letterSets[Math.floor(Math.random() * letterSets.length)].split("");
+
+    const centerLetter =
+      selectedLetterSet[Math.floor(Math.random() * selectedLetterSet.length)];
+    const outerLetters = selectedLetterSet.filter(
+      (letter) => letter !== centerLetter
+    );
+
+    /* html */ `
+      <button data-center>${centerLetter}</button>
+      ${outerLetters
+        .map(
+          (letter, index) => /* html */ `
+            <button data-order="${index + 1}">${letter}</button>
+          `
+        )
+        .join("")}
+    `;
+  </script>
+</div>
+<script webc:bucket="defer">
+  const letterButtons = document.querySelectorAll(".letter-buttons button");
+  const inputDisplay = document.getElementById("input-display");
+
+  for (button of letterButtons) {
+    button.addEventListener("click", (e) => {
+      const character = e.currentTarget.textContent;
+      inputDisplay.textContent += character;
+    });
+  }
+</script>
+<style webc:scoped>
+  :host {
+    width: 25%;
+    max-width: 8rem;
+    aspect-ratio: 1.15;
+
+    padding: 13% 11%;
+    margin: 4rem auto;
+  }
+
+  button {
+    clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+    background: #e6e6e6;
+    font-weight: 600;
+    font-size: 1.4rem;
+    position: absolute;
+    border: none;
+    text-transform: uppercase;
+
+    width: inherit;
+    max-width: inherit;
+    aspect-ratio: inherit;
+
+    --translate-x: 0;
+    --translate-y: 0;
+    --scale: 0.925;
+    transform: translate(var(--translate-x), var(--translate-y))
+      scale(var(--scale));
+  }
+
+  button[data-center] {
+    --color-1: #1644ff;
+    --color-1: oklch(51% 0.285 265);
+    --color-2: #e100d2;
+    --color-2: oklch(63% 0.29 332);
+    --color-3: #fdd000;
+    --color-3: oklch(87% 0.2 93);
+    background-image: linear-gradient(
+      43deg,
+      var(--color-1) 0%,
+      var(--color-2) 36%,
+      var(--color-3) 87%
+    );
+    color: white;
+  }
+
+  [data-order="1"] {
+    --translate-y: -100%;
+  }
+
+  [data-order="2"] {
+    --translate-x: -75%;
+    --translate-y: -50%;
+  }
+
+  [data-order="3"] {
+    --translate-x: 75%;
+    --translate-y: -50%;
+  }
+
+  [data-order="4"] {
+    --translate-x: -75%;
+    --translate-y: 50%;
+  }
+
+  [data-order="5"] {
+    --translate-x: 75%;
+    --translate-y: 50%;
+  }
+
+  [data-order="6"] {
+    --translate-y: 100%;
+  }
+</style>

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" :content="meta?.description" />
+    <meta name="generator" :content="eleventy.generator" />
+    <title @html="meta?.title"></title>
+    <style @raw="getCss(page.url)" webc:keep></style>
+    <script @raw="getJs(page.url)" webc:keep></script>
+    <link rel="stylesheet" href="../styles/reset.css" />
+  </head>
+  <body>
+    <template @raw="content" webc:nokeep></template>
+    <script @raw="getJs(page.url, 'defer')" webc:keep></script>
+  </body>
+</html>

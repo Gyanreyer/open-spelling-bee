@@ -1,0 +1,13 @@
+---
+layout: "layouts/base.webc"
+meta:
+  title: "Open Spelling Bee"
+  description: "Spelling Bee for all"
+---
+
+<main>
+  <h1>Open Spelling Bee</h1>
+  <input-display></input-display>
+  <letter-buttons></letter-buttons>
+</main>
+<style></style>
