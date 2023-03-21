@@ -1,0 +1,25 @@
+<input webc:root="override" id="guess-input" type="text"></input>
+<style webc:scoped>
+  :host {
+    font-size: 2rem;
+    text-transform: uppercase;
+    text-align: center;
+
+    background: none;
+    border: none;
+  }
+</style>
+<script webc:bucket="defer">
+  let invalidInputCharactersRegex;
+  function updateInvalidInputCharactersRegex() {
+    invalidInputCharactersRegex = new RegExp(`[^${window.currentLetterSet}]`, "g");
+  }
+  updateInvalidInputCharactersRegex();
+  document.addEventListener("letter-set-changed", updateInvalidInputCharactersRegex);
+
+  // Prevent invalid characters from being entered into the input field.
+  const input = document.getElementById("guess-input");
+  input.addEventListener("input", () => {
+    input.value = input.value.replaceAll(invalidInputCharactersRegex, "");
+  });
+</script>

@@ -15,7 +15,7 @@
 </div>
 <script webc:bucket="defer">
   const letterButtons = document.querySelectorAll(".letter-buttons button");
-  const inputDisplay = document.getElementById("letter-input");
+  const inputDisplay = document.getElementById("guess-input");
 
   for (button of letterButtons) {
     button.addEventListener("click", (e) => {
