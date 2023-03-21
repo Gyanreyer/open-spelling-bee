@@ -4,7 +4,8 @@
   "description": "An open source, inclusive take on the Spelling Bee word game",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "pnpx @11ty/eleventy",
+    "dev": "pnpx @11ty/eleventy --serve"
   },
   "repository": {
     "type": "git",

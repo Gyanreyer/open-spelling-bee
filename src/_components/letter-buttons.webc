@@ -1,35 +1,26 @@
 <div webc:root="override" class="letter-buttons">
   <script webc:type="js" webc:is="template">
-    const { letterSets } = words.en;
-    const selectedLetterSet =
-      letterSets[Math.floor(Math.random() * letterSets.length)].split("");
-
-    const centerLetter =
-      selectedLetterSet[Math.floor(Math.random() * selectedLetterSet.length)];
-    const outerLetters = selectedLetterSet.filter(
-      (letter) => letter !== centerLetter
-    );
-
+    // Note that the buttons are not tabbable because they are really awkward to navigate with
+    // a keyboard. Instead, keyboard users can directly type into the input field.
     /* html */ `
-      <button data-center>${centerLetter}</button>
-      ${outerLetters
-        .map(
-          (letter, index) => /* html */ `
-            <button data-order="${index + 1}">${letter}</button>
-          `
-        )
-        .join("")}
+      <button class="outer-letter" tabindex="-1" type="button"></button>
+      <button class="outer-letter" tabindex="-1" type="button"></button>
+      <button class="outer-letter" tabindex="-1" type="button"></button>
+      <button class="outer-letter" tabindex="-1" type="button"></button>
+      <button class="outer-letter" tabindex="-1" type="button"></button>
+      <button class="outer-letter" tabindex="-1" type="button"></button>
+      <button class="center-letter" tabindex="-1" type="button"></button>
     `;
   </script>
 </div>
 <script webc:bucket="defer">
   const letterButtons = document.querySelectorAll(".letter-buttons button");
-  const inputDisplay = document.getElementById("input-display");
+  const inputDisplay = document.getElementById("letter-input");
 
   for (button of letterButtons) {
     button.addEventListener("click", (e) => {
       const character = e.currentTarget.textContent;
-      inputDisplay.textContent += character;
+      inputDisplay.value += character;
     });
   }
 </script>
@@ -63,7 +54,7 @@
       scale(var(--scale));
   }
 
-  button[data-center] {
+  .center-letter {
     --color-1: #1644ff;
     --color-1: oklch(51% 0.285 265);
     --color-2: #e100d2;
@@ -79,31 +70,67 @@
     color: white;
   }
 
-  [data-order="1"] {
+  .outer-letter:nth-child(1) {
     --translate-y: -100%;
   }
 
-  [data-order="2"] {
+  .outer-letter:nth-child(2) {
     --translate-x: -75%;
     --translate-y: -50%;
   }
 
-  [data-order="3"] {
+  .outer-letter:nth-child(3) {
     --translate-x: 75%;
     --translate-y: -50%;
   }
 
-  [data-order="4"] {
+  .outer-letter:nth-child(4) {
     --translate-x: -75%;
     --translate-y: 50%;
   }
 
-  [data-order="5"] {
+  .outer-letter:nth-child(5) {
     --translate-x: 75%;
     --translate-y: 50%;
   }
 
-  [data-order="6"] {
+  .outer-letter:nth-child(6) {
     --translate-y: 100%;
   }
 </style>
+<script>
+  function shuffleOuterLetters() {
+    const outerLetterButtons = document.querySelectorAll(".outer-letter");
+
+    for (let i = 0, len = outerLetterButtons.length; i < len; ++i) {
+      // Iterate over each button and randomly swap its letter with one of the
+      // other buttons to achieve a simple shuffle effect.
+      const swapIndex = Math.floor(Math.random() * len);
+      const swapLetter = outerLetterButtons[swapIndex].textContent;
+      outerLetterButtons[swapIndex].textContent =
+        outerLetterButtons[i].textContent;
+      outerLetterButtons[i].textContent = swapLetter;
+    }
+  }
+
+  function onLetterSetChanged() {
+    const centerLetterButton = document.querySelector(".center-letter");
+    const outerLetterButtons = document.querySelectorAll(".outer-letter");
+
+    centerLetterButton.textContent = window.currentCenterLetter;
+
+    const outerLetters = window.currentLetterSet.replace(
+      window.currentCenterLetter,
+      ""
+    );
+
+    for (let i = 0, len = outerLetters.length; i < len; ++i) {
+      outerLetterButtons[i].textContent = outerLetters[i];
+    }
+
+    // Shuffle the outer letters so the initial order is not always the same.
+    shuffleOuterLetters();
+  }
+
+  document.addEventListener("letter-set-changed", onLetterSetChanged);
+</script>

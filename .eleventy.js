@@ -6,6 +6,8 @@ module.exports = (eleventyConfig) => {
     components: ["src/_components/**/*.webc"],
   });
 
+  eleventyConfig.addPassthroughCopy({ "src/words": "words" });
+
   return {
     dir: {
       input: "src",

@@ -7,7 +7,6 @@ meta:
 
 <main>
   <h1>Open Spelling Bee</h1>
-  <input-display></input-display>
-  <letter-buttons></letter-buttons>
+  <letter-form></letter-form>
 </main>
 <style></style>

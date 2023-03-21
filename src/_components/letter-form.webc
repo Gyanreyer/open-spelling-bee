@@ -1,0 +1,86 @@
+<form webc:root="override">
+  <letter-input></letter-input>
+  <letter-buttons></letter-buttons>
+  <button type="reset">Delete</button>
+  <button type="button" onclick="shuffleOuterLetters()">Shuffle</button>
+  <button type="submit">Enter</button>
+</form>
+<script>
+  function initializeLetterSet(letterSet, centerLetter) {
+    if (!letterSet.includes(centerLetter)) {
+      console.error(
+        `Center letter ${centerLetter} is not in letter set ${letterSet}`
+      );
+      return getNewLetterSet();
+    }
+
+    if (!window.letterSets.includes(letterSet)) {
+      console.error(
+        `Letter set ${letterSet} is not in list of valid letter sets`
+      );
+      return getNewLetterSet();
+    }
+
+    window.currentLetterSet = letterSet;
+    window.currentCenterLetter = centerLetter;
+
+    localStorage.setItem("currentLetterSet", letterSet);
+    localStorage.setItem("currentCenterLetter", centerLetter);
+
+    // Apply the letter set to the URL's query params so sets are sharable
+    const searchParams = new URLSearchParams();
+    searchParams.set("letters", letterSet);
+    searchParams.set("center", centerLetter);
+
+    window.history.replaceState(null, null, `?${searchParams}`);
+
+    const event = new Event("letter-set-changed");
+    document.dispatchEvent(event);
+  }
+
+  // Randomly picks a new letter set to use
+  function getNewLetterSet() {
+    const letterSet =
+      letterSets[Math.floor(Math.random() * window.letterSets.length)];
+    const centerLetter =
+      letterSet[Math.floor(Math.random() * letterSet.length)];
+
+    initializeLetterSet(letterSet, centerLetter);
+  }
+
+  async function setUpInitialLetterSet() {
+    try {
+      const [letterSets, words] = await Promise.all([
+        fetch("/words/en/letterSets.json").then((res) => res.json()),
+        fetch("/words/en/words.json").then((res) => res.json()),
+      ]);
+      window.letterSets = letterSets;
+      window.words = words;
+    } catch (err) {
+      console.error(
+        "Failed to load word sets for your language. Please try refreshing.",
+        err
+      );
+      return;
+    }
+
+    const searchParams = new URLSearchParams(window.location.search);
+    let letters = searchParams.get("letters");
+    let center = searchParams.get("center");
+
+    if (!letters || !center) {
+      // If we don't have a letter set in the URL query params, check local storage
+      letters = localStorage.getItem("currentLetterSet");
+      center = localStorage.getItem("currentCenterLetter");
+    }
+
+    if (!letters || !center) {
+      // If we couldn't find a letter set in local storage, pick a new random one
+      getNewLetterSet();
+    } else {
+      initializeLetterSet(letters, center);
+    }
+  }
+
+  setUpInitialLetterSet();
+</script>

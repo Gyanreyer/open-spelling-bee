@@ -1,0 +1,11 @@
+<input webc:root="override" id="letter-input" type="text" ></input>
+<style webc:scoped>
+  :host {
+    font-size: 2rem;
+    text-transform: uppercase;
+    text-align: center;
+
+    background: none;
+    border: none;
+  }
+</style>
