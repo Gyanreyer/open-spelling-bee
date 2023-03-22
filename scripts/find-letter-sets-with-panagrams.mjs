@@ -3,10 +3,7 @@
 
 const fs = await import("node:fs/promises");
 
-const fileContents = await fs.readFile(
-  "src/_data/words/en/words.json",
-  "utf-8"
-);
+const fileContents = await fs.readFile("src/words/en/words.json", "utf-8");
 
 const words = JSON.parse(fileContents);
 
@@ -43,7 +40,7 @@ for (const [letterSet, words] of letterSets.entries()) {
 }
 
 await fs.writeFile(
-  "src/_data/words/en/letterSets.json",
+  "src/words/en/letterSets.json",
   JSON.stringify(usableLetterSets),
   "utf-8"
 );

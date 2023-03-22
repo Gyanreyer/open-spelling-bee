@@ -28,7 +28,7 @@ const spellingBeeViableWords = allWords.filter(
 );
 
 await fs.writeFile(
-  "src/_data/words/en/words.json",
+  "src/words/en/words.json",
   JSON.stringify(spellingBeeViableWords),
   "utf-8"
 );

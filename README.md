@@ -1,18 +1,10 @@
 # Open Spelling Bee
 
-Do you take issue with the New York Times' abhorrent positions on trans rights but still want to play Spelling Bee without feeling guilty?
-
-Do you wish you could play Spelling Bee in other languages?
-
-Do you just like open source software?
-
-This is an inclusive place for you!
-
 ## Languages
 
 ### English
 
-The base list of words is taken from the [excellent curated list of "popular" words from github.com/dolph/dictionary](https://github.com/dolph/dictionary/blob/master/popular.txt>).
+The base list of words is taken from the [excellent list of words from https://github.com/en-wl/wordlist](https://github.com/en-wl/wordlist/blob/master/alt12dicts/2of4brif.txt).
 
 There will likely be words you think should be valid which are not included in the list!  Contributions to add missing words are strongly encouraged!
 
