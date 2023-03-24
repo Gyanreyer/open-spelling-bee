@@ -1,12 +1,41 @@
 ---
-layout: "layouts/base.webc"
 meta:
   title: "Open Spelling Bee"
-  description: "Spelling Bee for all"
+  description: "An open-source Spelling Bee game for the web"
 ---
 
-<main>
-  <h1>Open Spelling Bee</h1>
-  <letter-form></letter-form>
-</main>
-<style></style>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" :content="meta.description" />
+    <meta name="generator" :content="eleventy.generator" />
+    <title @html="meta.title"></title>
+    <style @raw="getCss(page.url)" webc:keep></style>
+    <script @raw="getJs(page.url)" webc:keep></script>
+    <link rel="stylesheet" href="./styles/reset.css" />
+    <link rel="manifest" href="/pwa/manifest.json" />
+  </head>
+  <body>
+    <main x-data>
+      <h1>Open Spelling Bee</h1>
+      <div x-text="`Score: ${$store.words.currentScore}`"></div>
+      <letter-form></letter-form>
+    </main>
+    <script @raw="getJs(page.url, 'defer')" webc:keep></script>
+    <script type="module" webc:keep>
+      import Alpine from "/js/alpine.mjs";
+      import persist from "/js/alpine-persist.mjs";
+
+      window.Alpine = Alpine;
+      Alpine.plugin(persist);
+      Alpine.start();
+
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("/pwa/sw.js");
+      }
+    </script>
+    <script src="./js/initAlpineStore.js" webc:bucket="defer"></script>
+  </body>
+</html>

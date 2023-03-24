@@ -6,7 +6,13 @@ module.exports = (eleventyConfig) => {
     components: ["src/_components/**/*.webc"],
   });
 
-  eleventyConfig.addPassthroughCopy({ "src/words": "words" });
+  eleventyConfig.addPassthroughCopy({
+    "src/words": "words",
+    "src/pwa": "pwa",
+    "node_modules/alpinejs/dist/module.esm.js": "js/alpine.mjs",
+    "node_modules/@alpinejs/persist/dist/module.esm.js":
+      "js/alpine-persist.mjs",
+  });
 
   return {
     dir: {

@@ -1,0 +1,6 @@
+{
+  "name": "Open Spelling Bee",
+  "description": "An open source spelling bee game for the web",
+  "start_url": "/",
+  "display": "fullscreen"
+}

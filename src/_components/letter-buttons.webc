@@ -1,29 +1,21 @@
 <div webc:root="override" class="letter-buttons">
-  <script webc:type="js" webc:is="template">
-    // Note that the buttons are not tabbable because they are really awkward to navigate with
-    // a keyboard. Instead, keyboard users can directly type into the input field.
-    /* html */ `
-      <button class="outer-letter" tabindex="-1" type="button"></button>
-      <button class="outer-letter" tabindex="-1" type="button"></button>
-      <button class="outer-letter" tabindex="-1" type="button"></button>
-      <button class="outer-letter" tabindex="-1" type="button"></button>
-      <button class="outer-letter" tabindex="-1" type="button"></button>
-      <button class="outer-letter" tabindex="-1" type="button"></button>
-      <button class="center-letter" tabindex="-1" type="button"></button>
-    `;
-  </script>
+  <template x-for="outerLetter in $store.words.outerLetters" webc:keep>
+    <button
+      class="outer-letter"
+      tabindex="-1"
+      type="button"
+      x-text="outerLetter"
+      x-on:click="$store.words.currentGuess += $event.target.textContent"
+    ></button>
+  </template>
+  <button
+    class="center-letter"
+    tabindex="-1"
+    type="button"
+    x-text="$store.words.currentCenterLetter"
+    x-on:click="$store.words.currentGuess += $event.target.textContent"
+  ></button>
 </div>
-<script webc:bucket="defer">
-  const letterButtons = document.querySelectorAll(".letter-buttons button");
-  const inputDisplay = document.getElementById("guess-input");
-
-  for (button of letterButtons) {
-    button.addEventListener("click", (e) => {
-      const character = e.currentTarget.textContent;
-      inputDisplay.value += character;
-    });
-  }
-</script>
 <style webc:scoped>
   :host {
     width: 25%;
@@ -70,67 +62,31 @@
     color: white;
   }
 
-  .outer-letter:nth-child(1) {
+  .outer-letter:nth-of-type(1) {
     --translate-y: -100%;
   }
 
-  .outer-letter:nth-child(2) {
+  .outer-letter:nth-of-type(2) {
     --translate-x: -75%;
     --translate-y: -50%;
   }
 
-  .outer-letter:nth-child(3) {
+  .outer-letter:nth-of-type(3) {
     --translate-x: 75%;
     --translate-y: -50%;
   }
 
-  .outer-letter:nth-child(4) {
+  .outer-letter:nth-of-type(4) {
     --translate-x: -75%;
     --translate-y: 50%;
   }
 
-  .outer-letter:nth-child(5) {
+  .outer-letter:nth-of-type(5) {
     --translate-x: 75%;
     --translate-y: 50%;
   }
 
-  .outer-letter:nth-child(6) {
+  .outer-letter:nth-of-type(6) {
     --translate-y: 100%;
   }
 </style>
-<script>
-  function shuffleOuterLetters() {
-    const outerLetterButtons = document.querySelectorAll(".outer-letter");
-
-    for (let i = 0, len = outerLetterButtons.length; i < len; ++i) {
-      // Iterate over each button and randomly swap its letter with one of the
-      // other buttons to achieve a simple shuffle effect.
-      const swapIndex = Math.floor(Math.random() * len);
-      const swapLetter = outerLetterButtons[swapIndex].textContent;
-      outerLetterButtons[swapIndex].textContent =
-        outerLetterButtons[i].textContent;
-      outerLetterButtons[i].textContent = swapLetter;
-    }
-  }
-
-  function onLetterSetChanged() {
-    const centerLetterButton = document.querySelector(".center-letter");
-    const outerLetterButtons = document.querySelectorAll(".outer-letter");
-
-    centerLetterButton.textContent = window.currentCenterLetter;
-
-    const outerLetters = window.currentLetterSet.replace(
-      window.currentCenterLetter,
-      ""
-    );
-
-    for (let i = 0, len = outerLetters.length; i < len; ++i) {
-      outerLetterButtons[i].textContent = outerLetters[i];
-    }
-
-    // Shuffle the outer letters so the initial order is not always the same.
-    shuffleOuterLetters();
-  }
-
-  document.addEventListener("letter-set-changed", onLetterSetChanged);
-</script>

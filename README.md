@@ -1,5 +1,7 @@
 # Open Spelling Bee
 
+An open-source Spelling Bee game for the web.
+
 ## Languages
 
 ### English
