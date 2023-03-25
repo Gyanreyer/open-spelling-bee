@@ -20,7 +20,7 @@ meta:
   <body>
     <main x-data>
       <h1>Open Spelling Bee</h1>
-      <div x-text="`Score: ${$store.words.currentScore}`"></div>
+      <div x-text="`Score: ${$store.game.currentScore}`"></div>
       <letter-form></letter-form>
     </main>
     <script @raw="getJs(page.url, 'defer')" webc:keep></script>

@@ -1,6 +1,8 @@
 document.addEventListener("alpine:init", () => {
+  const wordFetchPromise = fetch("/words/en.json").then((res) => res.json());
+
   function shuffleArray(array) {
-    const arrayCopy = [...array];
+    const arrayCopy = array.slice();
     for (let i = arrayCopy.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [arrayCopy[i], arrayCopy[j]] = [arrayCopy[j], arrayCopy[i]];
@@ -24,101 +26,180 @@ document.addEventListener("alpine:init", () => {
     return (word.length <= 4 ? 1 : word.length) + (isPanagram ? 7 : 0);
   }
 
-  Alpine.store("words", {
-    words: null,
-    letterSetData: null,
-    currentLetterSet: Alpine.$persist(null),
-    currentCenterLetter: Alpine.$persist(null),
-    outerLetters: Alpine.$persist([]),
-    validWords: Alpine.$persist(null),
-    invalidWordRegex: Alpine.$persist(null),
-    totalPossibleScore: Alpine.$persist(null),
+  const getRandomLetterSetIndices = async () => {
+    const [allWords, letterSetData] = await wordFetchPromise;
+
+    const centerLetterIndex = Math.floor(Math.random() * letterSetData.length);
+
+    const [centerLetterCode, letterSetOptions] =
+      letterSetData[centerLetterIndex];
+
+    const outerLettersIndex = Math.floor(
+      Math.random() * letterSetOptions.length
+    );
+
+    return {
+      centerLetterIndex,
+      outerLettersIndex,
+    };
+  };
+
+  const getDataForLetterSetIndices = async (
+    centerLetterIndex,
+    outerLettersIndex
+  ) => {
+    const [allWords, letterSetData] = await wordFetchPromise;
+
+    const [centerLetterCode, letterSetOptions] =
+      letterSetData[centerLetterIndex];
+
+    const centerLetter = String.fromCharCode(centerLetterCode + 97);
+
+    const [outerLetterString, wordIndices] =
+      letterSetOptions[outerLettersIndex];
+
+    const outerLetters = shuffleArray(outerLetterString.split(""));
+    const validWords = wordIndices.map((index) => allWords[index]);
+
+    return {
+      centerLetter,
+      outerLetters,
+      validWords,
+    };
+  };
+
+  Alpine.store("game", {
+    centerLetterIndex: Alpine.$persist(null),
+    centerLetter: "",
+    outerLettersIndex: Alpine.$persist(null),
+    outerLetters: [],
+    validWords: [],
     guessedWords: Alpine.$persist([]),
-    currentGuess: "",
-    currentScore: Alpine.$persist(0),
-    setUp() {
-      if (
-        !this.currentLetterSet ||
-        !this.currentCenterLetter ||
-        !this.validWords
-      ) {
-        this.getNewLetterSet();
-      }
-    },
-    submitGuess() {
-      if (!this.currentGuess) return;
-
-      const word = this.currentGuess.toLowerCase();
-
-      this.currentGuess = "";
-
-      if (word.length < 3) {
-        alert("Words must be at least 3 letters long!");
-        return;
-      }
-
-      for (let i = 0, len = word.length; i < len; ++i) {
-        const letter = word[i];
-        if (!this.currentLetterSet.includes(letter)) {
-          alert("You can't use that letter!");
-          return;
+    totalPossibleScore: 0,
+    currentScore: 0,
+    invalidWordRegex: null,
+    validWordRegex: null,
+    async setUp() {
+      if (this.centerLetterIndex == null || this.outerLettersIndex == null) {
+        await this.getNewLetterSet();
+      } else {
+        try {
+          await this.hydrateLetterSetData();
+        } catch (e) {
+          // If something goes wrong while attempting to hydrate the data,
+          // something may have been tampered with so we'll just bail out and get a new
+          // letter set.
+          await this.getNewLetterSet();
         }
       }
+    },
+    validateWord(word) {
+      if (word.length < 4) {
+        return {
+          isValid: false,
+          reason: "Words must be at least 4 letters long.",
+        };
+      }
 
-      const wordData = this.validWords[word];
+      if (this.invalidWordRegex.test(word)) {
+        return {
+          isValid: false,
+          reason: "Words can only contain the center letter and outer letters.",
+        };
+      }
 
-      if (!wordData) {
-        alert("That's not a valid word!");
-        return;
+      if (!this.validWordRegex.test(word)) {
+        return {
+          isValid: false,
+          reason: "Words must include the center letter.",
+        };
+      }
+
+      if (!this.validWords.includes(word)) {
+        return {
+          isValid: false,
+          reason: "Not a valid word.",
+        };
       }
 
       if (this.guessedWords.includes(word)) {
-        alert("You already guessed that word!");
-        return;
+        return {
+          isValid: false,
+          reason: "You've already guessed that word.",
+        };
       }
 
-      this.guessedWords.push(word);
-      this.currentScore += wordData.points;
+      return {
+        isValid: true,
+        score: getWordScore(word),
+      };
+    },
+    submitGuess(guessWord) {
+      if (!guessWord) return;
+
+      const sanitizedWord = guessWord.toLowerCase();
+
+      const { isValid, reason, score } = this.validateWord(sanitizedWord);
+
+      if (isValid) {
+        this.guessedWords.push(sanitizedWord);
+        this.currentScore += score;
+      } else {
+        alert(reason);
+      }
     },
     shuffleOuterLetters() {
       this.outerLetters = shuffleArray(this.outerLetters);
     },
-    async getNewLetterSet() {
-      if (!this.words || !this.letterSetData) {
-        const [words, letterSetData] = await fetch("/words/en.json").then(
-          (res) => res.json()
+    async hydrateLetterSetData() {
+      const { centerLetter, outerLetters, validWords } =
+        await getDataForLetterSetIndices(
+          this.centerLetterIndex,
+          this.outerLettersIndex
         );
-        this.words = words;
-        this.letterSetData = letterSetData;
-      }
+      this.centerLetter = centerLetter;
+      this.outerLetters = shuffleArray(outerLetters);
+      this.validWords = validWords;
 
-      this.guessedWords = [];
-      this.currentScore = 0;
+      this.totalPossibleScore = this.validWords.reduce(
+        (total, word) => total + getWordScore(word),
+        0
+      );
 
-      const [centerLetterCode, letterSetOptions] =
-        this.letterSetData[
-          Math.floor(Math.random() * this.letterSetData.length)
-        ];
+      // Sanitize the user's persisted list of guessed words to ensure there aren't duplicate words
+      this.guessedWords = Array.from(new Set(this.guessedWords));
 
-      this.currentCenterLetter = String.fromCharCode(centerLetterCode + 97);
+      // Calculate the user's current score based on their initial persisted list of guessed words
+      this.currentScore = this.guessedWords.reduce(
+        (total, word) => total + getWordScore(word),
+        0
+      );
 
-      const [outerLetterString, wordIndices] =
-        letterSetOptions[Math.floor(Math.random() * letterSetOptions.length)];
-
-      this.outerLetters = shuffleArray(outerLetterString.split(""));
-      this.validWords = wordIndices.map((index) => this.words[index]);
+      const outerLetterString = outerLetters.join("");
 
       this.invalidWordRegex = new RegExp(
-        `[^${this.currentCenterLetter}${outerLetterString}]`,
+        `[^${centerLetter}${outerLetterString}]`,
         "g"
       );
       this.validWordRegex = new RegExp(
-        `^[${outerLetterString}]*${outerLetterString}+[${outerLetterString}]*$`
+        `^[${outerLetterString}]*${centerLetter}+[${outerLetterString}]*$`
       );
+    },
+    async getNewLetterSet() {
+      this.guessedWords = [];
+      this.currentScore = 0;
+
+      const { centerLetterIndex, outerLettersIndex } =
+        await getRandomLetterSetIndices();
+
+      this.centerLetterIndex = centerLetterIndex;
+      this.outerLettersIndex = outerLettersIndex;
+
+      await this.hydrateLetterSetData();
     },
   });
 });
 
 document.addEventListener("alpine:initialized", () => {
-  Alpine.store("words").setUp();
+  Alpine.store("game").setUp();
 });

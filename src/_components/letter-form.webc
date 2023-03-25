@@ -1,12 +1,13 @@
 <form
   webc:root="override"
   id="letter-form"
-  x-on:submit="$event.preventDefault(); $store.words.submitGuess()"
+  x-data="{ guess: '' }"
+  x-on:submit="$event.preventDefault(); $store.game.submitGuess(guess); guess = '';"
 >
   <guess-input name="guess"></guess-input>
   <letter-buttons></letter-buttons>
-  <button type="reset">Delete</button>
-  <button type="button" x-on:click="$store.words.shuffleOuterLetters()">
+  <button type="button" x-on:click="guess = guess.slice(0, -1)">Delete</button>
+  <button type="button" x-on:click="$store.game.shuffleOuterLetters()">
     Shuffle
   </button>
   <button type="submit">Enter</button>

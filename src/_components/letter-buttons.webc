@@ -1,21 +1,33 @@
 <div webc:root="override" class="letter-buttons">
-  <template x-for="outerLetter in $store.words.outerLetters" webc:keep>
+  <template
+    x-for="outerLetter in $store.game.outerLetters"
+    webc:keep
+    x-bind:key="outerLetter"
+  >
     <button
       class="outer-letter"
-      tabindex="-1"
-      type="button"
-      x-text="outerLetter"
-      x-on:click="$store.words.currentGuess += $event.target.textContent"
+      x-bind="LetterButton"
+      x-model="outerLetter"
     ></button>
   </template>
   <button
     class="center-letter"
-    tabindex="-1"
-    type="button"
-    x-text="$store.words.currentCenterLetter"
-    x-on:click="$store.words.currentGuess += $event.target.textContent"
+    x-bind="LetterButton"
+    x-model="$store.game.centerLetter"
   ></button>
 </div>
+<script webc:bucket="defer">
+  document.addEventListener("alpine:init", () => {
+    Alpine.bind("LetterButton", () => ({
+      tabindex: "-1",
+      type: "button",
+      "x-data": "{ letter: '' }",
+      "x-modelable": "letter",
+      "x-text": "letter",
+      "@click": "guess += letter",
+    }));
+  });
+</script>
 <style webc:scoped>
   :host {
     width: 25%;

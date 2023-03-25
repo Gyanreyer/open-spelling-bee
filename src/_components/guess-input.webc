@@ -1,8 +1,6 @@
 <input webc:root="override" id="guess-input" type="text"
-  x-data="{ invalidWordRegex: '' }"
-  x-effect="invalidWordRegex = new RegExp(`[^${$store.words?.currentLetterSet || ''}]`, 'g')"
-  x-model="$store.words.currentGuess"
-  x-on:input="$store.words.currentGuess = $event.target.value.replace(invalidWordRegex, '')"
+  x-model="guess"
+  x-on:input="guess = $event.target.value.replace($store.game.invalidWordRegex, '')"
 ></input>
 <style webc:scoped>
   :host {

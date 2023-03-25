@@ -241,14 +241,14 @@ for (
     const letterSetIndex = finalConsolidatedLetterSets.length;
     finalConsolidatedLetterSets.push([
       centerLetterCharIndex,
-      [outerLetters, letterSetWords],
+      [[outerLetters, letterSetWords]],
     ]);
     consolidatedLetterSetIndexMap.set(centerLetterCharIndex, letterSetIndex);
   }
 }
 
 await fs.writeFile(
-  "src/words/en-v2.data",
+  "src/words/en.json",
   JSON.stringify([finalWordList, finalConsolidatedLetterSets]),
   "utf-8"
 );
