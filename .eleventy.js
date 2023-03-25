@@ -12,6 +12,7 @@ module.exports = (eleventyConfig) => {
     "node_modules/alpinejs/dist/module.esm.js": "js/alpine.mjs",
     "node_modules/@alpinejs/persist/dist/module.esm.js":
       "js/alpine-persist.mjs",
+    "node_modules/seedrandom/lib/alea.min.js": "js/alea.min.js",
   });
 
   return {

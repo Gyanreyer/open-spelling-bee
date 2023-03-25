@@ -15,7 +15,7 @@
     Alpine.bind("GuessNotification", () => ({
       "x-data": "{ visible: false, message: '' }",
       "x-effect":
-        "if (visible) { setTimeout(() => { visible = false }, (message.length * 100) + 1500) }",
+        "if (visible) { setTimeout(() => { visible = false }, (message.length * 50) + 1500) }",
       "x-text": "message",
       "x-show": "visible",
       "x-transition:enter": "enter",
@@ -82,7 +82,14 @@
   }
 
   .guess-display.invalid.enter {
-    animation: shake 0.2s;
+    animation: shake 0.2s linear;
     animation-iteration-count: 10;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .guess-display.invalid.enter {
+      /* Disable the shake animation for prefers-reduced-motion */
+      animation: none;
+    }
   }
 </style>

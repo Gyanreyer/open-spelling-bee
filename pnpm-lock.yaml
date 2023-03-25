@@ -6,11 +6,13 @@ specifiers:
   '@alpinejs/persist': ^3.12.0
   '@types/node': ^18.15.3
   alpinejs: ^3.12.0
+  seedrandom: ^3.0.5
   workerpool: ^6.4.0
 
 dependencies:
   '@alpinejs/persist': 3.12.0
   alpinejs: 3.12.0
+  seedrandom: 3.0.5
 
 devDependencies:
   '@11ty/eleventy': 2.0.0
@@ -1350,6 +1352,10 @@ packages:
       extend-shallow: 2.0.1
       kind-of: 6.0.3
     dev: true
+
+  /seedrandom/3.0.5:
+    resolution: {integrity: sha512-8OwmbklUNzwezjGInmZ+2clQmExQPvomqjL7LFqOYqtmuxRgQYqOD3mHaU+MvZn5FLUeVxVfQjwLZW/n/JFuqg==}
+    dev: false
 
   /semver-compare/1.0.0:
     resolution: {integrity: sha512-YM3/ITh2MJ5MtzaM429anh+x2jiLVjqILF4m4oyQB18W7Ggea7BfqdH/wGMK7dDiMghv/6WG7znWMwUDzJiXow==}

@@ -25,6 +25,8 @@ meta:
       <letter-form></letter-form>
     </main>
     <script @raw="getJs(page.url, 'defer')" webc:keep></script>
+    <script src="./js/gameStore.js" webc:bucket="defer"></script>
+    <script src="/js/alea.min.js" webc:bucket="defer" webc:keep></script>
     <script type="module" webc:keep>
       import Alpine from "/js/alpine.mjs";
       import persist from "/js/alpine-persist.mjs";
@@ -37,6 +39,5 @@ meta:
         navigator.serviceWorker.register("/pwa/sw.js");
       }
     </script>
-    <script src="./js/initAlpineStore.js" webc:bucket="defer"></script>
   </body>
 </html>

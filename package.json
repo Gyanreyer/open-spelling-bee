@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@alpinejs/persist": "^3.12.0",
-    "alpinejs": "^3.12.0"
+    "alpinejs": "^3.12.0",
+    "seedrandom": "^3.0.5"
   }
 }

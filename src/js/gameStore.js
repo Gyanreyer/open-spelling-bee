@@ -29,16 +29,23 @@ document.addEventListener("alpine:init", () => {
     };
   }
 
-  const getRandomLetterSetIndices = async () => {
+  const getRandomLetterSetIndices = async (seed = null) => {
     const [allWords, letterSetData] = await wordFetchPromise;
 
-    const centerLetterIndex = Math.floor(Math.random() * letterSetData.length);
+    // If we have a seed, make a seeded alea instance which will
+    // predictably produce the same sequence of random numbers each time,
+    // otherwise use Math.random
+    const getRandomNumber = seed ? new alea(seed) : Math.random;
+
+    const centerLetterIndex = Math.floor(
+      getRandomNumber() * letterSetData.length
+    );
 
     const [centerLetterCode, letterSetOptions] =
       letterSetData[centerLetterIndex];
 
     const outerLettersIndex = Math.floor(
-      Math.random() * letterSetOptions.length
+      getRandomNumber() * letterSetOptions.length
     );
 
     return {
@@ -80,9 +87,22 @@ document.addEventListener("alpine:init", () => {
     guessedWords: Alpine.$persist([]),
     totalPossibleScore: 0,
     currentScore: 0,
+    shouldChangePuzzleDaily: true,
+    puzzleStartTimestamp: Alpine.$persist(null),
     invalidWordRegex: null,
     validWordRegex: null,
     async setUp() {
+      if (this.shouldChangePuzzleDaily) {
+        const lastPuzzleStartDate = new Date(this.puzzleStartTimestamp || 0);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (today > lastPuzzleStartDate) {
+          this.puzzleStartTimestamp = today.toISOString();
+          return await this.getNewLetterSet(this.puzzleStartTimestamp);
+        }
+      }
+
       if (this.centerLetterIndex == null || this.outerLettersIndex == null) {
         await this.getNewLetterSet();
       } else {
@@ -203,12 +223,12 @@ document.addEventListener("alpine:init", () => {
         `^[${outerLetterString}]*${centerLetter}+[${outerLetterString}]*$`
       );
     },
-    async getNewLetterSet() {
+    async getNewLetterSet(seed = null) {
       this.guessedWords = [];
       this.currentScore = 0;
 
       const { centerLetterIndex, outerLettersIndex } =
-        await getRandomLetterSetIndices();
+        await getRandomLetterSetIndices(seed);
 
       this.centerLetterIndex = centerLetterIndex;
       this.outerLettersIndex = outerLettersIndex;
