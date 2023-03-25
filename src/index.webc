@@ -21,6 +21,7 @@ meta:
     <main x-data>
       <h1>Open Spelling Bee</h1>
       <div x-text="`Score: ${$store.game.currentScore}`"></div>
+      <guess-notifications></guess-notifications>
       <letter-form></letter-form>
     </main>
     <script @raw="getJs(page.url, 'defer')" webc:keep></script>

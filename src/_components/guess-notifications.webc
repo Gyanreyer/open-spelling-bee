@@ -1,0 +1,88 @@
+<template webc:nokeep webc:root="override">
+  <div
+    class="guess-display valid"
+    x-bind="GuessNotification"
+    x-on:valid-guess.window="message = `+${$event.detail.score}`; visible = true"
+  ></div>
+  <div
+    class="guess-display invalid"
+    x-bind="GuessNotification"
+    x-on:invalid-guess.window="message = $event.detail.reason; visible = true"
+  ></div>
+</template>
+<script webc:bucket="defer">
+  document.addEventListener("alpine:init", () => {
+    Alpine.bind("GuessNotification", () => ({
+      "x-data": "{ visible: false, message: '' }",
+      "x-effect":
+        "if (visible) { setTimeout(() => { visible = false }, (message.length * 100) + 1500) }",
+      "x-text": "message",
+      "x-show": "visible",
+      "x-transition:enter": "enter",
+      "x-transition:enter-start": "enter-start",
+      "x-transition:leave": "leave",
+    }));
+  });
+</script>
+<style>
+  .guess-display.enter {
+    transition: opacity 0.3s;
+  }
+  .guess-display.enter-start {
+    opacity: 0;
+  }
+
+  .guess-display.leave {
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s, visibility 0s 0.3s;
+  }
+
+  .guess-display {
+    display: inline-block;
+    margin: 0 auto;
+    box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.25);
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+  }
+  .guess-display.valid {
+    --color-1: #1644ff;
+    --color-1: oklch(51% 0.285 265);
+    --color-2: #e100d2;
+    --color-2: oklch(63% 0.29 332);
+    --color-3: #fdd000;
+    --color-3: oklch(87% 0.2 93);
+    background-image: linear-gradient(
+      43deg,
+      var(--color-1) 0%,
+      var(--color-2) 36%,
+      var(--color-3) 87%
+    );
+    color: white;
+  }
+
+  .guess-display.invalid {
+    background-color: crimson;
+    color: white;
+  }
+
+  @keyframes shake {
+    0% {
+      transform: translate(0, 0);
+    }
+    25% {
+      transform: translate(-2%, 0);
+    }
+    75% {
+      transform: translate(2%, 0);
+    }
+    100% {
+      transform: translate(0, 0);
+    }
+  }
+
+  .guess-display.invalid.enter {
+    animation: shake 0.2s;
+    animation-iteration-count: 10;
+  }
+</style>

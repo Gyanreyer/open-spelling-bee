@@ -30,12 +30,18 @@
 </script>
 <style webc:scoped>
   :host {
-    width: 25%;
-    max-width: 8rem;
-    aspect-ratio: 1.15;
+    margin: 0 auto;
+    display: block;
+    position: relative;
+    --button-wrapper-size: 60vw;
+    --button-wrapper-max-size: 20rem;
+    width: var(--button-wrapper-size);
+    max-width: var(--button-wrapper-max-size);
+    aspect-ratio: 1;
 
-    padding: 13% 11%;
-    margin: 4rem auto;
+    /* Button widths are the wrapper's width / 2.5 */
+    --button-size: 24vw;
+    --button-max-size: 8rem;
   }
 
   button {
@@ -44,15 +50,17 @@
     font-weight: 600;
     font-size: 1.4rem;
     position: absolute;
+    top: 50%;
+    left: 50%;
     border: none;
     text-transform: uppercase;
 
-    width: inherit;
-    max-width: inherit;
-    aspect-ratio: inherit;
+    width: var(--button-size);
+    max-width: var(--button-max-size);
+    aspect-ratio: 1.15;
 
-    --translate-x: 0;
-    --translate-y: 0;
+    --translate-x: -50%;
+    --translate-y: -50%;
     --scale: 0.925;
     transform: translate(var(--translate-x), var(--translate-y))
       scale(var(--scale));
@@ -75,30 +83,30 @@
   }
 
   .outer-letter:nth-of-type(1) {
-    --translate-y: -100%;
+    --translate-y: -150%;
   }
 
   .outer-letter:nth-of-type(2) {
-    --translate-x: -75%;
-    --translate-y: -50%;
+    --translate-x: -125%;
+    --translate-y: -100%;
   }
 
   .outer-letter:nth-of-type(3) {
-    --translate-x: 75%;
-    --translate-y: -50%;
+    --translate-x: 25%;
+    --translate-y: -100%;
   }
 
   .outer-letter:nth-of-type(4) {
-    --translate-x: -75%;
-    --translate-y: 50%;
+    --translate-x: -125%;
+    --translate-y: 0%;
   }
 
   .outer-letter:nth-of-type(5) {
-    --translate-x: 75%;
-    --translate-y: 50%;
+    --translate-x: 25%;
+    --translate-y: 0%;
   }
 
   .outer-letter:nth-of-type(6) {
-    --translate-y: 100%;
+    --translate-y: 50%;
   }
 </style>

@@ -2,7 +2,7 @@ lockfileVersion: 5.3
 
 specifiers:
   '@11ty/eleventy': ^2.0.0
-  '@11ty/eleventy-plugin-webc': ^0.9.4
+  '@11ty/eleventy-plugin-webc': ^0.10.0
   '@alpinejs/persist': ^3.12.0
   '@types/node': ^18.15.3
   alpinejs: ^3.12.0
@@ -14,7 +14,7 @@ dependencies:
 
 devDependencies:
   '@11ty/eleventy': 2.0.0
-  '@11ty/eleventy-plugin-webc': 0.9.4
+  '@11ty/eleventy-plugin-webc': 0.10.0
   '@types/node': 18.15.5
   workerpool: 6.4.0
 
@@ -55,13 +55,13 @@ packages:
       - supports-color
     dev: true
 
-  /@11ty/eleventy-plugin-webc/0.9.4:
-    resolution: {integrity: sha512-dNIdrL1iTXzvjTO9ITWEL72x978nK6MKGsEFjUCE7OPdQMw/Gst5wGsXVAjpN0nzuulgz6akNJAK0w1n8TcdnA==}
+  /@11ty/eleventy-plugin-webc/0.10.0:
+    resolution: {integrity: sha512-8K0Ys7Utpja8hU+XClrCB59y0+QcSi/+h18io7V+ki6APIR6rLP4oiJtARyrjDw5T6Zj1c3BdFrHpY8V6iohNQ==}
     engines: {node: '>=14.18'}
     dependencies:
       '@11ty/eleventy': 2.0.0
       '@11ty/eleventy-plugin-bundle': 1.0.4
-      '@11ty/webc': 0.9.3
+      '@11ty/webc': 0.10.0
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -126,8 +126,8 @@ packages:
       - utf-8-validate
     dev: true
 
-  /@11ty/webc/0.9.3:
-    resolution: {integrity: sha512-r5y2YcIrcptmmJTajoW1A5VUoKYa9bqeuZAAcSP1q/ROFwh7PfjYm9//4YSRV6B17RfCm10CO3rHeyL0Z/ppQw==}
+  /@11ty/webc/0.10.0:
+    resolution: {integrity: sha512-Z5/IUk2VQsQsp+ILFPuCi3+YuYnUVNchFS7MH/gL4pBpkLNbuM0QaNQmdcwF3psz6SxXuikNtlHuLuO29kl3ew==}
     engines: {node: '>=14.18'}
     dependencies:
       '@11ty/eleventy-utils': 1.0.1

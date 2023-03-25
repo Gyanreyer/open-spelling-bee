@@ -23,7 +23,10 @@ document.addEventListener("alpine:init", () => {
     }
 
     const isPanagram = uniqueCharCount === 7;
-    return (word.length <= 4 ? 1 : word.length) + (isPanagram ? 7 : 0);
+    return {
+      score: (word.length <= 4 ? 1 : word.length) + (isPanagram ? 7 : 0),
+      isPanagram,
+    };
   }
 
   const getRandomLetterSetIndices = async () => {
@@ -131,7 +134,7 @@ document.addEventListener("alpine:init", () => {
 
       return {
         isValid: true,
-        score: getWordScore(word),
+        ...getWordScore(word),
       };
     },
     submitGuess(guessWord) {
@@ -139,13 +142,28 @@ document.addEventListener("alpine:init", () => {
 
       const sanitizedWord = guessWord.toLowerCase();
 
-      const { isValid, reason, score } = this.validateWord(sanitizedWord);
+      const { isValid, reason, score, isPanagram } =
+        this.validateWord(sanitizedWord);
 
       if (isValid) {
         this.guessedWords.push(sanitizedWord);
         this.currentScore += score;
+        window.dispatchEvent(
+          new CustomEvent("valid-guess", {
+            detail: {
+              score,
+              isPanagram,
+            },
+          })
+        );
       } else {
-        alert(reason);
+        window.dispatchEvent(
+          new CustomEvent("invalid-guess", {
+            detail: {
+              reason,
+            },
+          })
+        );
       }
     },
     shuffleOuterLetters() {
@@ -162,7 +180,7 @@ document.addEventListener("alpine:init", () => {
       this.validWords = validWords;
 
       this.totalPossibleScore = this.validWords.reduce(
-        (total, word) => total + getWordScore(word),
+        (total, word) => total + getWordScore(word).score,
         0
       );
 
@@ -171,7 +189,7 @@ document.addEventListener("alpine:init", () => {
 
       // Calculate the user's current score based on their initial persisted list of guessed words
       this.currentScore = this.guessedWords.reduce(
-        (total, word) => total + getWordScore(word),
+        (total, word) => total + getWordScore(word).score,
         0
       );
 
