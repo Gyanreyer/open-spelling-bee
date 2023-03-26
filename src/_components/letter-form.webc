@@ -3,6 +3,7 @@
   id="letter-form"
   x-data="{ guess: '' }"
   x-on:submit.prevent="$store.game.submitGuess(guess); guess = '';"
+  autocomplete="off"
 >
   <guess-input name="guess"></guess-input>
   <letter-buttons></letter-buttons>

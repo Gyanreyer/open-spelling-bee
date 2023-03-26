@@ -20,7 +20,8 @@ meta:
   <body>
     <main x-data>
       <h1>Open Spelling Bee</h1>
-      <div x-text="`Score: ${$store.game.currentScore}`"></div>
+      <current-score></current-score>
+      <previous-guesses></previous-guesses>
       <guess-notifications></guess-notifications>
       <letter-form></letter-form>
     </main>

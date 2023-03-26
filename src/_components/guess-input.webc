@@ -2,6 +2,7 @@
   <input id="guess-input" type="text"
     x-model="guess"
     x-on:input="guess = $event.target.value.toLowerCase().replace($store.game.invalidWordRegex, '')"
+    x-bind:aria-label="`Input your guess. The word must contain the letter ${$store.game.centerLetter} along with any of the letters ${$store.game.outerLetters.join(', ')}.`"
   ></input>
   <div class="input-underline" x-text="guess" aria-hidden></div>
 </div>

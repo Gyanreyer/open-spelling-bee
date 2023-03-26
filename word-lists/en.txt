@@ -32597,6 +32597,7 @@ membership
 memberships
 membrane
 membranes
+meme
 memento
 mementoes
 mementos
@@ -38058,6 +38059,7 @@ peelers
 peeling
 peelings
 peels
+peen
 peep
 peepbo
 peeped
@@ -38196,6 +38198,7 @@ pensioning
 pensions
 pensive
 pensively
+pent
 pentagon
 pentagonal
 pentagons

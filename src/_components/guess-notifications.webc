@@ -13,6 +13,9 @@
 <script webc:bucket="defer">
   document.addEventListener("alpine:init", () => {
     Alpine.bind("GuessNotification", () => ({
+      // Changes to a guess notification should be announced to screen readers
+      role: "alert",
+      "aria-live": "polite",
       "x-data": "{ visible: false, message: '' }",
       "x-effect":
         "if (visible) { setTimeout(() => { visible = false }, (message.length * 50) + 1500) }",

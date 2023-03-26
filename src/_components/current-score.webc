@@ -1,0 +1,1 @@
+<div x-text="`Score: ${$store.game.currentScore}`"></div>
