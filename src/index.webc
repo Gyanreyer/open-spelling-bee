@@ -15,7 +15,7 @@ meta:
     <style @raw="getCss(page.url)" webc:keep></style>
     <script @raw="getJs(page.url)" webc:keep></script>
     <link rel="stylesheet" href="./styles/reset.css" />
-    <link rel="manifest" href="/pwa/manifest.json" />
+    <link rel="manifest" href="/manifest.json" />
   </head>
   <body>
     <main x-data>
@@ -34,9 +34,10 @@ meta:
       window.Alpine = Alpine;
       Alpine.plugin(persist);
       Alpine.start();
-
+    </script>
+    <script webc:bucket="defer">
       if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("/pwa/sw.js");
+        navigator.serviceWorker.register("/sw.js");
       }
     </script>
   </body>

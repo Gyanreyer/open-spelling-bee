@@ -1,12 +1,15 @@
-const cacheName = "open-spelling-bee-0.0.0";
+const cacheName = "open-spelling-bee-0.1.1";
 const cacheFiles = [
+  "/",
   "/index.html",
   "/words/en.json",
   "/js/alpine.mjs",
   "/js/alpine-persist.mjs",
+  "/js/alea.min.js",
 ];
 
 self.addEventListener("install", (e) => {
+  console.log("[Service Worker] Installed");
   e.waitUntil(
     (async () => {
       const cache = await caches.open(cacheName);

@@ -8,7 +8,7 @@ module.exports = (eleventyConfig) => {
 
   eleventyConfig.addPassthroughCopy({
     "src/words": "words",
-    "src/pwa": "pwa",
+    "src/pwa": "/",
     "node_modules/alpinejs/dist/module.esm.js": "js/alpine.mjs",
     "node_modules/@alpinejs/persist/dist/module.esm.js":
       "js/alpine-persist.mjs",
