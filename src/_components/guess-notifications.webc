@@ -1,4 +1,4 @@
-<template webc:nokeep webc:root="override">
+<div webc:root="override" class="guess-notifications">
   <div
     class="guess-display valid"
     x-bind="GuessNotification"
@@ -9,7 +9,7 @@
     x-bind="GuessNotification"
     x-on:invalid-guess.window="message = $event.detail.reason; visible = true"
   ></div>
-</template>
+</div>
 <script webc:bucket="defer">
   document.addEventListener("alpine:init", () => {
     Alpine.bind("GuessNotification", () => ({
@@ -28,25 +28,23 @@
   });
 </script>
 <style>
-  .guess-display.enter {
-    transition: opacity 0.3s;
-  }
-  .guess-display.enter-start {
-    opacity: 0;
-  }
-
-  .guess-display.leave {
-    visibility: hidden;
-    opacity: 0;
-    transition: opacity 0.3s, visibility 0s 0.3s;
+  .guess-notifications {
+    position: relative;
+    height: 2rem;
+    margin: 1rem auto;
   }
 
   .guess-display {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, 0);
     display: inline-block;
     margin: 0 auto;
     box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.25);
     padding: 0.5rem;
     border-radius: 0.5rem;
+    z-index: 10;
   }
   .guess-display.valid {
     --color-1: #1644ff;
@@ -69,18 +67,38 @@
     color: white;
   }
 
+  .guess-display.enter {
+    transition-property: opacity;
+    transition-duration: 0.3s;
+  }
+  .guess-display.enter-start {
+    opacity: 0;
+  }
+
+  /* Valid guess notifications slide up as well as fading in */
+  .guess-display.valid.enter {
+    transition-property: opacity, transform;
+  }
+  .guess-display.valid.enter-start {
+    transform: translate(-50%, 25%);
+  }
+
+  .guess-display.leave {
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s, visibility 0s 0.3s;
+  }
+
   @keyframes shake {
-    0% {
-      transform: translate(0, 0);
+    0%,
+    100% {
+      transform: translate(-50%, 0);
     }
     25% {
-      transform: translate(-2%, 0);
+      transform: translate(-52%, 0);
     }
     75% {
-      transform: translate(2%, 0);
-    }
-    100% {
-      transform: translate(0, 0);
+      transform: translate(-48%, 0);
     }
   }
 

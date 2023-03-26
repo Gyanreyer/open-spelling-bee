@@ -40,7 +40,7 @@
     left: 50%;
     transform: translateX(-50%);
     color: transparent;
-    min-width: 4ch;
+    min-width: 3ch;
   }
   
   .input-underline::after {

@@ -1,0 +1,4 @@
+<header webc:root="override" x-data>
+  <current-score></current-score>
+  <previous-guesses></previous-guesses>
+</header>

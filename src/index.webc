@@ -18,13 +18,8 @@ meta:
     <link rel="manifest" href="/manifest.json" />
   </head>
   <body>
-    <main x-data>
-      <h1>Open Spelling Bee</h1>
-      <current-score></current-score>
-      <previous-guesses></previous-guesses>
-      <guess-notifications></guess-notifications>
-      <letter-form></letter-form>
-    </main>
+    <page-header></page-header>
+    <page-main></page-main>
     <script @raw="getJs(page.url, 'defer')" webc:keep></script>
     <script src="./js/gameStore.js" webc:bucket="defer"></script>
     <script src="/js/alea.min.js" webc:bucket="defer" webc:keep></script>

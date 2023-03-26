@@ -1,0 +1,4 @@
+<main webc:root="override" x-data>
+  <guess-notifications></guess-notifications>
+  <letter-form></letter-form>
+</main>

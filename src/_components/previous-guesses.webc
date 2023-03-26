@@ -1,22 +1,27 @@
 <div webc:root="override">
-  <button type="button" x-on:click="$refs.prevguessdialog.show()" x-text="$store.game.guessedWords.join('&nbsp; ')">
-  </button>
+  <button
+    type="button"
+    x-on:click="$refs.prevguessdialog.show()"
+    x-text="$store.game.guessedWords.slice().reverse().join('&nbsp; ')"
+    aria-label="Show previous guesses"
+  ></button>
   <dialog x-ref="prevguessdialog">
     <h2 x-text="`You have found ${$store.game.guessedWords.length} words`"></h2>
     <button type="button" x-on:click="$refs.prevguessdialog.close()">Close</button>
-    <template x-for="word in $store.game.guessedWords" x-bind:key="word">
+    <template x-for="word in $store.game.guessedWords.slice().sort()" x-bind:key="word">
       <p x-text="word"></span>
     </template>
   </dialog>
 </div>
 <style webc:scoped>
   :host > button {
-    flex-wrap: nowrap;
+    display: block;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     width: calc(100% - 2rem);
-    margin: 1rem;
+    max-width: 25rem;
+    margin: 1rem auto;
     padding: 0.5rem;
     border-radius: 0.3rem;
     background-color: #e6e6e6;

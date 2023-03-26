@@ -148,21 +148,8 @@ document.addEventListener("alpine:init", () => {
         this.validateWord(sanitizedWord);
 
       if (isValid) {
-        for (
-          let i = 0, guessedWordCount = this.guessedWords.length;
-          i <= guessedWordCount;
-          ++i
-        ) {
-          if (i === guessedWordCount) {
-            this.guessedWords.push(sanitizedWord);
-          } else if (
-            // If the new word is alphabetically after the word at i, insert it as the next word
-            sanitizedWord.localeCompare(this.guessedWords[i]) > 0
-          ) {
-            this.guessedWords.splice(i + 1, 0, sanitizedWord);
-            break;
-          }
-        }
+        this.guessedWords.push(sanitizedWord);
+
         this.currentScore += score;
         window.dispatchEvent(
           new CustomEvent("valid-guess", {
