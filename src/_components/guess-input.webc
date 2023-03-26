@@ -3,23 +3,24 @@
     x-model="guess"
     x-on:input="guess = $event.target.value.toLowerCase().replace($store.game.invalidWordRegex, '')"
   ></input>
-  <div class="input-underline" x-bind:style="`--w: ${guess.length}`"></div>
+  <div class="input-underline" x-text="guess" aria-hidden></div>
 </div>
 <style webc:scoped>
   :host {
     position: relative;
     margin: 0 auto;
     font-size: 3rem;
+    text-transform: uppercase;
   }
 
   #guess-input {
-    text-transform: uppercase;
     text-align: center;
 
     background: none;
     border: none;
 
     font-size: inherit;
+    text-transform: inherit;
 
     display: block;
     margin: 0 auto;
@@ -31,20 +32,27 @@
   }
 
   .input-underline {
-    --w: 0;
-
     position: absolute;
-    top: 100%;
+    pointer-events: none;
+    height: 100%;
+    top: 0;
     left: 50%;
     transform: translateX(-50%);
-
-    width: calc(1em + var(--w) * 1.25ch);
-
+    color: transparent;
+    min-width: 4ch;
+  }
+  
+  .input-underline::after {
+    content: "";
+    position: absolute;
+    top: calc(100% + 0.1rem);
+    left: 0;
+    width: 100%;
     height: 1px;
     background: #1A1A1A;
   }
 
-  #guess-input:focus + .input-underline {
+  #guess-input:focus + .input-underline::after {
     background-color: #fdd000;
     background-color: oklch(87% 0.2 93);
     height: 2px;
