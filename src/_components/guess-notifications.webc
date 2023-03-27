@@ -1,32 +1,23 @@
 <div webc:root="override" class="guess-notifications">
-  <div
-    class="guess-display valid"
-    x-bind="GuessNotification"
-    x-on:valid-guess.window="message = `+${$event.detail.score}`; visible = true"
-  ></div>
-  <div
-    class="guess-display invalid"
-    x-bind="GuessNotification"
-    x-on:invalid-guess.window="message = $event.detail.reason; visible = true"
-  ></div>
+  <template
+    x-for="(notification, index) in $store.game.notifications"
+    x-bind:key="notification.id"
+  >
+    <div
+      role="alert"
+      aria-live="polite"
+      x-bind:class="`notification ${notification.class}`"
+      x-text="notification.message"
+      x-bind:aria-label="notification.ariaLabel"
+      x-bind:style="`--i: ${index}`"
+      x-data="{ show:false }"
+      x-show="show"
+      x-transition:enter-start="enter"
+      x-transition:leave-end="leave"
+      x-init="$nextTick(()=>{show = true}); setTimeout(()=>{show = false}, notification.aliveTime - 300)"
+    ></div>
+  </template>
 </div>
-<script webc:bucket="defer">
-  document.addEventListener("alpine:init", () => {
-    Alpine.bind("GuessNotification", () => ({
-      // Changes to a guess notification should be announced to screen readers
-      role: "alert",
-      "aria-live": "polite",
-      "x-data": "{ visible: false, message: '' }",
-      "x-effect":
-        "if (visible) { setTimeout(() => { visible = false }, (message.length * 50) + 1500) }",
-      "x-text": "message",
-      "x-show": "visible",
-      "x-transition:enter": "enter",
-      "x-transition:enter-start": "enter-start",
-      "x-transition:leave": "leave",
-    }));
-  });
-</script>
 <style>
   .guess-notifications {
     position: relative;
@@ -34,11 +25,14 @@
     margin: 1rem auto;
   }
 
-  .guess-display {
+  .notification {
     position: absolute;
     top: 0;
     left: 50%;
-    transform: translate(-50%, 0);
+    --alive-time: 0s;
+    --base-translate-y: calc(var(--i) * 110%);
+    transform: translate(-50%, var(--base-translate-y));
+    transition: transform 0.3s;
     display: inline-block;
     margin: 0 auto;
     box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.25);
@@ -46,7 +40,7 @@
     border-radius: 0.5rem;
     z-index: 10;
   }
-  .guess-display.valid {
+  .notification.valid-guess {
     --color-1: #1644ff;
     --color-1: oklch(51% 0.285 265);
     --color-2: #e100d2;
@@ -62,55 +56,42 @@
     color: white;
   }
 
-  .guess-display.invalid {
+  .notification.invalid-guess {
     background-color: crimson;
     color: white;
-  }
-
-  .guess-display.enter {
-    transition-property: opacity;
-    transition-duration: 0.3s;
-  }
-  .guess-display.enter-start {
-    opacity: 0;
-  }
-
-  /* Valid guess notifications slide up as well as fading in */
-  .guess-display.valid.enter {
-    transition-property: opacity, transform;
-  }
-  .guess-display.valid.enter-start {
-    transform: translate(-50%, 25%);
-  }
-
-  .guess-display.leave {
-    visibility: hidden;
-    opacity: 0;
-    transition: opacity 0.3s, visibility 0s 0.3s;
   }
 
   @keyframes shake {
     0%,
     100% {
-      transform: translate(-50%, 0);
+      transform: translate(-50%, var(--base-translate-y));
     }
     25% {
-      transform: translate(-52%, 0);
+      transform: translate(-53%, var(--base-translate-y));
     }
     75% {
-      transform: translate(-48%, 0);
+      transform: translate(-47%, var(--base-translate-y));
     }
   }
 
-  .guess-display.invalid.enter {
-    animation: shake 0.2s linear;
-    animation-iteration-count: 10;
-  }
+  @media (prefers-reduced-motion: no-preference) {
+    .notification.valid-guess {
+      transform: translate(-50%, var(--base-translate-y));
+    }
+    .notification.valid-guess.enter {
+      opacity: 0;
+      transform: translate(-50%, calc(var(--base-translate-y) + 25%));
+      transition: opacity 0.3s, transform 0.3s;
+    }
 
-  @media (prefers-reduced-motion: reduce) {
-    .guess-display.invalid.enter {
-      /* Disable the shake animation for prefers-reduced-motion */
-      animation: none;
+    .notification.invalid-guess {
+      animation: shake 0.2s linear;
+    }
+
+    .notification.leave {
+      opacity: 0;
+      transform: translate(-50%, calc(var(--base-translate-y) - 25%));
+      transition: opacity 0.3s, transform 0.3s;
     }
   }
 </style>

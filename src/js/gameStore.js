@@ -73,6 +73,7 @@ document.addEventListener("alpine:init", () => {
     puzzleStartTimestamp: Alpine.$persist(null),
     invalidWordRegex: null,
     validWordRegex: null,
+    notifications: [],
     async setUp() {
       if (this.shouldChangePuzzleDaily) {
         const lastPuzzleStartDate = new Date(this.puzzleStartTimestamp || 0);
@@ -139,6 +140,20 @@ document.addEventListener("alpine:init", () => {
         ...getWordScore(word),
       };
     },
+    showNotification(notificationConfig) {
+      const id = Math.random().toString(36);
+      const aliveTime = 1500 + notificationConfig.message.length * 50;
+
+      this.notifications.push({
+        id,
+        aliveTime,
+        ...notificationConfig,
+      });
+
+      setTimeout(() => {
+        this.notifications = this.notifications.filter((n) => n.id !== id);
+      }, aliveTime);
+    },
     submitGuess(guessWord) {
       if (!guessWord) return;
 
@@ -151,22 +166,26 @@ document.addEventListener("alpine:init", () => {
         this.guessedWords.push(sanitizedWord);
 
         this.currentScore += score;
-        window.dispatchEvent(
-          new CustomEvent("valid-guess", {
-            detail: {
-              score,
-              isPanagram,
-            },
-          })
-        );
+
+        if (isPanagram) {
+          this.showNotification({
+            class: "valid-guess panagram",
+            message: `Panagram! +${score}`,
+            ariaLabel: `${sanitizedWord} is a panagram. Good job! +${score} points.`,
+          });
+        } else {
+          this.showNotification({
+            class: "valid-guess",
+            message: `+${score}`,
+            ariaLabel: `Correct! +${score} points.`,
+          });
+        }
       } else {
-        window.dispatchEvent(
-          new CustomEvent("invalid-guess", {
-            detail: {
-              reason,
-            },
-          })
-        );
+        this.showNotification({
+          class: "invalid-guess",
+          message: reason,
+          ariaLabel: reason,
+        });
       }
     },
     shuffleOuterLetters() {
