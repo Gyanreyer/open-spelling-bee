@@ -169,13 +169,13 @@ document.addEventListener("alpine:init", () => {
 
         if (isPanagram) {
           this.showNotification({
-            class: "valid-guess panagram",
+            class: "valid-guess gradient-bg panagram",
             message: `Panagram! +${score}`,
             ariaLabel: `${sanitizedWord} is a panagram. Good job! +${score} points.`,
           });
         } else {
           this.showNotification({
-            class: "valid-guess",
+            class: "valid-guess gradient-bg",
             message: `+${score}`,
             ariaLabel: `Correct! +${score} points.`,
           });

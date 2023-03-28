@@ -40,25 +40,11 @@
     border-radius: 0.5rem;
     z-index: 10;
   }
-  .notification.valid-guess {
-    --color-1: #1644ff;
-    --color-1: oklch(51% 0.285 265);
-    --color-2: #e100d2;
-    --color-2: oklch(63% 0.29 332);
-    --color-3: #fdd000;
-    --color-3: oklch(87% 0.2 93);
-    background-image: linear-gradient(
-      43deg,
-      var(--color-1) 0%,
-      var(--color-2) 36%,
-      var(--color-3) 87%
-    );
-    color: white;
-  }
 
   .notification.invalid-guess {
-    background-color: crimson;
-    color: white;
+    background-color: #fdd000;
+    background-color: oklch(87% 0.2 93);
+    color: #1a1a1a;
   }
 
   @keyframes shake {

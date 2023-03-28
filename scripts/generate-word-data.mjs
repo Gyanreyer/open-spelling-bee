@@ -1,7 +1,6 @@
 // Script to take a raw txt file with a list of words and generate a json file
 // with only the words that are viable for the spelling bee game
 // (longer than 4 chars, only has at most 6 unique chars).
-// TODO: extend this to accept args for different languages
 
 /**
  * @example

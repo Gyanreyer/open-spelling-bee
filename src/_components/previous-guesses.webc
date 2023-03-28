@@ -19,9 +19,8 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    width: calc(100% - 2rem);
-    max-width: 25rem;
-    margin: 1rem auto;
+    width: 100%;
+    margin: 1rem 0;
     padding: 0.5rem;
     border-radius: 0.3rem;
     background-color: #e6e6e6;

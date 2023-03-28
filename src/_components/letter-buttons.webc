@@ -11,7 +11,7 @@
     ></button>
   </template>
   <button
-    class="center-letter"
+    class="gradient-bg"
     x-bind="LetterButton"
     x-model="$store.game.centerLetter"
   ></button>
@@ -46,7 +46,6 @@
 
   button {
     clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
-    background: #e6e6e6;
     font-weight: 600;
     font-size: 1.4rem;
     position: absolute;
@@ -66,20 +65,8 @@
       scale(var(--scale));
   }
 
-  .center-letter {
-    --color-1: #1644ff;
-    --color-1: oklch(51% 0.285 265);
-    --color-2: #e100d2;
-    --color-2: oklch(63% 0.29 332);
-    --color-3: #fdd000;
-    --color-3: oklch(87% 0.2 93);
-    background-image: linear-gradient(
-      43deg,
-      var(--color-1) 0%,
-      var(--color-2) 36%,
-      var(--color-3) 87%
-    );
-    color: white;
+  .outer-button {
+    background: #e6e6e6;
   }
 
   .outer-letter:nth-of-type(1) {

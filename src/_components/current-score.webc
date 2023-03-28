@@ -1,6 +1,19 @@
-<div x-text="`Score: ${$store.game.currentScore}`"></div>
-<meter
-  x-bind:value="$store.game.currentScore"
-  min="0"
-  x-bind:max="$store.game.totalPossibleScore"
-></meter>
+<div webc:root="override">
+  <div x-text="`Score: ${$store.game.currentScore}`"></div>
+  <meter
+    x-bind:value="$store.game.currentScore"
+    min="0"
+    x-bind:max="$store.game.totalPossibleScore"
+  ></meter>
+</div>
+<style webc:scoped>
+  :host {
+    display: flex;
+    align-items: center;
+    margin: 0 auto;
+  }
+
+  meter::-webkit-meter-optimum-value {
+    background: #1a1a1a;
+  }
+</style>
