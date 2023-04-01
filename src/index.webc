@@ -12,29 +12,27 @@ meta:
     <meta name="description" :content="meta.description" />
     <meta name="generator" :content="eleventy.generator" />
     <title @html="meta.title"></title>
-    <style @raw="getCss(page.url)" webc:keep></style>
-    <script @raw="getJs(page.url)" webc:keep></script>
+    <style @raw="getBundle('css')" webc:keep></style>
+    <script type="importmap" webc:keep>
+      {
+        "imports": {
+          "alpinejs": "https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/module.esm.js",
+          "@alpinejs/persist": "https://cdn.jsdelivr.net/npm/@alpinejs/persist@3.x.x/dist/module.esm.js"
+        }
+      }
+    </script>
+    <script type="module" src="/js/initServiceWorker.mjs" webc:keep></script>
     <link rel="stylesheet" href="./styles/reset.css" />
     <link rel="manifest" href="/manifest.json" />
   </head>
-  <body>
-    <page-header></page-header>
-    <page-main></page-main>
-    <script @raw="getJs(page.url, 'defer')" webc:keep></script>
-    <script src="./js/gameStore.js" webc:bucket="defer"></script>
-    <script src="/js/alea.min.js" webc:bucket="defer" webc:keep></script>
-    <script type="module" webc:keep>
-      import Alpine from "/js/alpine.mjs";
-      import persist from "/js/alpine-persist.mjs";
-
-      window.Alpine = Alpine;
-      Alpine.plugin(persist);
-      Alpine.start();
-    </script>
-    <script webc:bucket="defer">
-      if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("/sw.js");
-      }
-    </script>
+  <body x-data>
+    <loading-indicator x-show="false"></loading-indicator>
+    <template x-if="true">
+      <div>
+        <page-header></page-header>
+        <page-main></page-main>
+      </div>
+    </template>
+    <script src="/js/main.mjs" type="module" async webc:keep></script>
   </body>
 </html>

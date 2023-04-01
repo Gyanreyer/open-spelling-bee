@@ -16,18 +16,6 @@
     x-model="$store.game.centerLetter"
   ></button>
 </div>
-<script webc:bucket="defer">
-  document.addEventListener("alpine:init", () => {
-    Alpine.bind("LetterButton", () => ({
-      tabindex: "-1",
-      type: "button",
-      "x-data": "{ letter: '' }",
-      "x-modelable": "letter",
-      "x-text": "letter",
-      "@click": "guess += letter",
-    }));
-  });
-</script>
 <style webc:scoped>
   :host {
     margin: 2rem auto;
@@ -65,7 +53,7 @@
       scale(var(--scale));
   }
 
-  .outer-button {
+  .outer-letter {
     background: #e6e6e6;
   }
 

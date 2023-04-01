@@ -4,8 +4,8 @@
   "description": "An open source, inclusive take on the Spelling Bee word game",
   "main": "index.js",
   "scripts": {
-    "build": "pnpx @11ty/eleventy",
-    "dev": "pnpx @11ty/eleventy --serve"
+    "build": "pnpm dlx @11ty/eleventy",
+    "dev": "pnpm dlx @11ty/eleventy --serve"
   },
   "repository": {
     "type": "git",
@@ -18,14 +18,16 @@
   },
   "homepage": "https://github.com/Gyanreyer/open-spelling-bee#readme",
   "devDependencies": {
-    "@11ty/eleventy": "^2.0.0",
-    "@11ty/eleventy-plugin-webc": "^0.10.0",
+    "@11ty/eleventy": "^2.0.1",
+    "@11ty/eleventy-plugin-webc": "^0.10.1",
     "@types/node": "^18.15.3",
+    "html-minifier-terser": "^7.1.0",
+    "terser": "^5.16.8",
     "workerpool": "^6.4.0"
   },
   "dependencies": {
     "@alpinejs/persist": "^3.12.0",
     "alpinejs": "^3.12.0",
-    "seedrandom": "^3.0.5"
+    "through2": "^4.0.2"
   }
 }

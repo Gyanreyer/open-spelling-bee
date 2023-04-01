@@ -7,17 +7,38 @@
 >
   <guess-input name="guess"></guess-input>
   <letter-buttons></letter-buttons>
-  <button class="delete" type="button" x-on:click="guess = guess.slice(0, -1)">
-    Delete
-  </button>
-  <button type="button" x-on:click="$store.game.shuffleOuterLetters()">
-    Shuffle
-  </button>
-  <button type="submit">Enter</button>
+  <div class="form-buttons">
+    <button
+      class="delete"
+      type="button"
+      x-on:click="guess = guess.slice(0, -1)"
+      aria-hidden
+    >
+      Delete
+    </button>
+    <button
+      type="button"
+      x-on:click="$store.game.shuffleOuterLetters()"
+      aria-label="Shuffle the outer letters"
+    >
+      Shuffle
+    </button>
+    <button type="submit">Enter</button>
+  </div>
 </form>
-<style>
-  button.delete,
-  button[type="submit"] {
+<style webc:scoped>
+  .form-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  .form-buttons button {
+    font-size: 1rem;
+  }
+
+  .form-buttons button.delete,
+  .form-buttons button[type="submit"] {
     background: none;
     border: 1px solid black;
     border-radius: 1rem;

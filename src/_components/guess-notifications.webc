@@ -9,12 +9,11 @@
       x-bind:class="`notification ${notification.class}`"
       x-text="notification.message"
       x-bind:aria-label="notification.ariaLabel"
-      x-bind:style="`--i: ${index}`"
-      x-data="{ show:false }"
-      x-show="show"
+      x-bind:style="`--i: ${$store.game.notifications.slice(0,index).filter(n=>n.show).length}`"
+      x-show="notification.show"
       x-transition:enter-start="enter"
       x-transition:leave-end="leave"
-      x-init="$nextTick(()=>{show = true}); setTimeout(()=>{show = false}, notification.aliveTime - 300)"
+      x-init="$nextTick(()=>{notification.show = true}); setTimeout(()=>{notification.show = false}, notification.aliveTime - 300)"
     ></div>
   </template>
 </div>
@@ -29,16 +28,15 @@
     position: absolute;
     top: 0;
     left: 50%;
-    --alive-time: 0s;
-    --base-translate-y: calc(var(--i) * 110%);
+    --base-translate-y: calc(var(--i) * 120%);
     transform: translate(-50%, var(--base-translate-y));
     transition: transform 0.3s;
-    display: inline-block;
     margin: 0 auto;
     box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.25);
     padding: 0.5rem;
     border-radius: 0.5rem;
     z-index: 10;
+    white-space: nowrap;
   }
 
   .notification.invalid-guess {

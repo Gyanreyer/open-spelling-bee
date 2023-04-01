@@ -1,19 +1,132 @@
 <div webc:root="override">
-  <div x-text="`Score: ${$store.game.currentScore}`"></div>
-  <meter
-    x-bind:value="$store.game.currentScore"
-    min="0"
-    x-bind:max="$store.game.totalPossibleScore"
-  ></meter>
+  <div
+    class="current-milestone-label"
+    x-text="$store.game.scoreMilestones.findLast(({percent})=> Math.floor(percent * $store.game.totalPossibleScore) <= $store.game.currentScore).name"
+  ></div>
+  <div class="progress-bar-wrapper">
+    <progress
+      aria-label="Current score"
+      x-bind:value="$store.game.currentScore || '0'"
+      x-bind:max="Math.floor($store.game.totalPossibleScore * 0.7)"
+      x-text="`${$store.game.currentScore} points`"
+    ></progress>
+    <div
+      class="current-score-dot"
+      aria-hidden
+      x-bind:style="`--width: ${$store.game.currentScore.toString().length + 1.2}ch; left: ${100 * ($store.game.currentScore / Math.floor($store.game.totalPossibleScore * 0.7))}%;`"
+    >
+      <span x-text="$store.game.currentScore"></span>
+    </div>
+    <template x-for="milestone in $store.game.scoreMilestones.slice(1, -1)">
+      <div
+        class="milestone-dot"
+        x-bind:class="milestone.percent * $store.game.totalPossibleScore <= $store.game.currentScore ? 'filled' : ''"
+        aria-hidden
+        x-bind:style="`left: ${100 * Math.min(1, (milestone.percent / 0.7))}%`"
+      ></div>
+    </template>
+  </div>
 </div>
 <style webc:scoped>
   :host {
     display: flex;
     align-items: center;
-    margin: 0 auto;
   }
 
-  meter::-webkit-meter-optimum-value {
-    background: #1a1a1a;
+  .current-milestone-label {
+    font-size: 0.8rem;
+    text-align: center;
+  }
+
+  .progress-bar-wrapper {
+    position: relative;
+    height: 0.4rem;
+    flex: 1;
+    margin-left: 1.5ch;
+  }
+
+  progress {
+    --bg-gradient: linear-gradient(43deg, #1644ff 0%, #e100d2 36%, #fdd000 87%);
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.25);
+    background: none;
+    border: none;
+    border-radius: 1rem;
+    overflow: hidden;
+  }
+
+  @supports (color: oklch(0% 0 0)) {
+    progress {
+      --bg-gradient: linear-gradient(
+        43deg,
+        oklch(51% 0.285 265) 0%,
+        oklch(63% 0.29 332) 36%,
+        oklch(87% 0.2 93) 87%
+      );
+    }
+  }
+
+  progress::-moz-progress-bar {
+    appearance: none;
+    background-image: var(--bg-gradient);
+    border: none;
+  }
+
+  progress::-webkit-progress-bar {
+    background: none;
+  }
+
+  progress::-webkit-progress-value {
+    appearance: none;
+    background-image: var(--bg-gradient);
+    border: none;
+  }
+
+  .current-score-dot {
+    --width: 2.2ch;
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: var(--width);
+    height: var(--width);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: left 0.2s;
+    transform: translate(-50%, -50%);
+    font-size: 0.8rem;
+    border-radius: 50%;
+    overflow: hidden;
+    background-color: #e6e6e6;
+    box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.25);
+    z-index: 2;
+  }
+
+  .current-score-dot span {
+    height: 1em;
+  }
+
+  .milestone-dot {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    height: 0.6rem;
+    width: 0.6rem;
+    background-color: #e6e6e6;
+    box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+  }
+
+  .milestone-dot.filled {
+    width: 0.2rem;
+    height: 0.2rem;
+    box-shadow: 0px 0px 2px rgba(0, 0, 0, 0.5);
+    background-color: papayawhip;
   }
 </style>

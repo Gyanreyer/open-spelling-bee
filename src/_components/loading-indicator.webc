@@ -1,0 +1,42 @@
+<div webc:root="override">
+  <div class="gradient-bg"></div>
+  Loading...
+</div>
+<style webc:scoped>
+  @keyframes loaderFadeIn {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes hover {
+    from {
+      transform: translate(-50%, 0);
+    }
+
+    to {
+      transform: translate(-50%, -30%);
+    }
+  }
+
+  :host {
+    font-size: 2rem;
+    font-weight: bold;
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    display: inline-block;
+    background: white;
+    animation: loaderFadeIn 0.3s, hover 1.5s ease-in-out infinite alternate;
+  }
+
+  .gradient-bg {
+    mix-blend-mode: lighten;
+    position: absolute;
+    inset: 0;
+  }
+</style>
