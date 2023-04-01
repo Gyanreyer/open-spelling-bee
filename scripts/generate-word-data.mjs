@@ -27,6 +27,9 @@ const viableWords = new Map();
 
 const startTime = performance.now();
 
+// Filter down allWords to a set of only the words that are viable for the game,
+// and also generate a set of all the possible letter sets based on any words which
+// are panagrams (have exactly 7 unique characters)
 for (
   let wordIndex = 0, wordCount = allWords.length;
   wordIndex < wordCount;
@@ -62,79 +65,98 @@ for (
 }
 
 const finalLetterSetList = [];
-for (const letterSetString of letterSets) {
-  const letterSetArray = new Array(8);
-  letterSetArray[0] = letterSetString;
-  for (let i = 1; i < 8; ++i) {
-    letterSetArray[i] = [];
-  }
-  finalLetterSetList.push(letterSetArray);
-}
-
+const finalLetterSetVariantList = [];
 const finalWordList = [];
 const wordIndexMap = new Map();
 
-for (
-  let letterSetIndex = 0, letterSetCount = finalLetterSetList.length;
-  letterSetIndex < letterSetCount;
-  ++letterSetIndex
-) {
-  const letterSet = finalLetterSetList[letterSetIndex];
-  const letterSetString = letterSet[0];
+const workerpool = await import("workerpool");
 
-  const regex = new RegExp(`^[${letterSetString}]*$`);
+const pool = workerpool.pool(
+  "./scripts/process-letter-set-worker.mjs"
+  // new URL("./process-letter-set-worker.mjs", import.meta.url)
+);
 
-  for (const [word, uniqueCharSet] of viableWords) {
-    if (regex.test(word)) {
-      if (!wordIndexMap.has(word)) {
-        wordIndexMap.set(word, finalWordList.length);
-        finalWordList.push(word);
-      }
-      const wordIndex = wordIndexMap.get(word);
+const processLetterSetPromises = [];
 
-      for (let i = 0; i < 7; ++i) {
-        const char = letterSetString[i];
-        if (uniqueCharSet.has(char)) {
-          letterSet[i + 1].push(wordIndex);
+const viableWordList = Array.from(viableWords.keys());
+
+fs.writeFile(wordFilePath, viableWordList.join("\n"), "utf-8");
+
+const unprocessedLetterSets = Array.from(letterSets);
+
+// Number of letter sets that we should process at a time
+// per worker (doing one at a time is barely faster than
+// doing them all at once due to the added overhead of
+// spawning a new worker and communicating with it)
+const LETTER_SET_CHUNK_SIZE = 100;
+
+while (unprocessedLetterSets.length > 0) {
+  const letterSetChunk = unprocessedLetterSets.splice(0, LETTER_SET_CHUNK_SIZE);
+  processLetterSetPromises.push(
+    pool
+      .exec("processLetterSet", [letterSetChunk, viableWordList])
+      .then((processedLetterSetArrayChunk) => {
+        for (const processedLetterSetArray of processedLetterSetArrayChunk) {
+          const [letterSetString, ...wordLists] = processedLetterSetArray;
+
+          let letterSetStringIndex = null;
+
+          for (
+            let i = 0, wordListCount = wordLists.length;
+            i < wordListCount;
+            ++i
+          ) {
+            const wordList = wordLists[i];
+
+            const wordCount = wordList.length;
+            if (wordCount < 10 || wordCount > 60) {
+              // Skip letter sets that have less than 10 words or more than 60 words
+              continue;
+            }
+
+            for (let j = 0; j < wordCount; ++j) {
+              // Replace the word strings with their index in the finalWordList
+              // for space efficiency in the final json file
+              const word = wordList[j];
+              if (!wordIndexMap.has(word)) {
+                wordIndexMap.set(word, finalWordList.length);
+                finalWordList.push(word);
+              }
+              const wordIndex = wordIndexMap.get(word);
+              wordList[j] = wordIndex;
+            }
+
+            if (letterSetStringIndex === null) {
+              letterSetStringIndex = finalLetterSetList.length;
+              finalLetterSetList.push(letterSetString);
+            }
+
+            finalLetterSetVariantList.push([
+              [letterSetStringIndex, i],
+              wordList,
+            ]);
+          }
         }
-      }
-    }
-  }
-
-  for (let i = 1; i < 8; ++i) {
-    // If there are more than 75 words for a given letter set variant,
-    // remove it; this is too many words for anyone to enjoy finding them all,
-    // and it also significantly inflates the file size
-    const variantWordCount = letterSet[i]?.length ?? 0;
-    if (variantWordCount < 10 || variantWordCount > 75) {
-      letterSet[i] = 0;
-    }
-  }
-
-  let hasVariantWithWords = false;
-
-  for (let i = 1; i < 8; ++i) {
-    const variantWordCount = finalLetterSetList[i]?.length ?? 0;
-    if (variantWordCount > 0) {
-      hasVariantWithWords = true;
-      break;
-    }
-  }
-
-  if (!hasVariantWithWords) {
-    // If there are no words for a given letter set, remove it
-    finalLetterSetList.splice(letterSetIndex, 1);
-    --letterSetIndex;
-    --letterSetCount;
-  }
+      })
+  );
 }
+
+await Promise.all(processLetterSetPromises);
+
+pool.terminate();
 
 await fs.writeFile(
   new URL(`../src/words/${lang}.json`, import.meta.url),
-  JSON.stringify([finalWordList, finalLetterSetList]),
+  JSON.stringify([
+    finalWordList,
+    finalLetterSetList,
+    finalLetterSetVariantList,
+  ]),
   "utf-8"
 );
 
 const totalTime = performance.now() - startTime;
 
 console.log("Processed word data in", totalTime, "ms");
+console.log("Final word count:", finalWordList.length);
+console.log("Final letter set count:", finalLetterSetList.length);
