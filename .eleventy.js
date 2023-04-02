@@ -15,21 +15,25 @@ module.exports = (eleventyConfig) => {
     {
       "src/js": "js",
       "src/pwa": "/",
-      "src/words": "words",
     },
     {
       transform: function (src, dest, stats) {
         return through(function (chunk, enc, done) {
           const output = chunk.toString();
-          // if (jsAssetPathRegex.test(src)) {
-          //   minifyJS(output).then((result) => done(null, result.code));
-          // } else {
-          done(null, output);
-          // }
+          if (jsAssetPathRegex.test(src)) {
+            minifyJS(output).then((result) => done(null, result.code));
+          } else if (src.endsWith(".json")) {
+            done(null, JSON.stringify(JSON.parse(output)));
+          } else {
+            done(null, output);
+          }
         });
       },
     }
   );
+
+  // Pass through word files without any processing
+  eleventyConfig.addPassthroughCopy("src/words");
 
   eleventyConfig.addTransform("htmlmin", async function (content) {
     if (this.page.outputPath && this.page.outputPath.endsWith(".html")) {

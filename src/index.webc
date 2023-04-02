@@ -34,5 +34,10 @@ meta:
       </div>
     </template>
     <script src="/js/main.mjs" type="module" async webc:keep></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/tsparticles-confetti@2.9.3/tsparticles.confetti.bundle.min.js"
+      async
+      webc:keep
+    ></script>
   </body>
 </html>

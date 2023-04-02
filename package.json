@@ -23,11 +23,7 @@
     "@types/node": "^18.15.3",
     "html-minifier-terser": "^7.1.0",
     "terser": "^5.16.8",
+    "through2": "^4.0.2",
     "workerpool": "^6.4.0"
-  },
-  "dependencies": {
-    "@alpinejs/persist": "^3.12.0",
-    "alpinejs": "^3.12.0",
-    "through2": "^4.0.2"
   }
 }

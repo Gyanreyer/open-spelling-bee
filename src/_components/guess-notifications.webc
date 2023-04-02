@@ -1,4 +1,5 @@
 <div webc:root="override" class="guess-notifications">
+  <div id="tsparticles"></div>
   <template
     x-for="(notification, index) in $store.game.notifications"
     x-bind:key="notification.id"

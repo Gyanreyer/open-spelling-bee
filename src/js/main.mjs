@@ -9,6 +9,19 @@ const seededRandom = (seed) => () => {
   return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
 };
 
+const fireConfetti = () => {
+  function randomInRange(min, max) {
+    return Math.random() * (max - min) + min;
+  }
+
+  confetti({
+    angle: randomInRange(55, 125),
+    spread: randomInRange(50, 70),
+    particleCount: randomInRange(50, 100),
+    origin: { y: 0.5 },
+  });
+};
+
 document.addEventListener("alpine:init", () => {
   function shuffleArray(array) {
     const arrayCopy = array.slice();
@@ -191,6 +204,8 @@ document.addEventListener("alpine:init", () => {
         this.currentScore += score;
 
         if (isPanagram) {
+          fireConfetti();
+
           this.showNotification({
             class: "valid-guess gradient-bg panagram",
             message: `Panagram! +${score}`,
