@@ -22,14 +22,14 @@ La lista base de palabras se toma de [https://github.com/mazyvan/most-common-spa
 
 ### Setup
 
-`pnpm install`
+`npm install`
 
 ### Building the page
 
 #### For development
 
-`pnpm run dev` (or `pnpx @11ty/eleventy`)
+`npm run dev` (or `npx @11ty/eleventy --serve`)
 
 #### For production
 
-`pnpm run build` (or `npx @11ty/eleventy`)
+`npm run build` (or `npx @11ty/eleventy`)
