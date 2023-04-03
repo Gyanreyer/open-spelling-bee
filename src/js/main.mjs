@@ -1,6 +1,3 @@
-import Alpine from "alpinejs";
-import persist from "@alpinejs/persist";
-
 // mulberry32 seeded PRNG
 const seededRandom = (seed) => () => {
   var t = (seed += 0x6d2b79f5);
@@ -9,6 +6,7 @@ const seededRandom = (seed) => () => {
   return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
 };
 
+// Uses tsparticles-confetti to fire a fancy confetti effect for celebrations
 const fireConfetti = () => {
   function randomInRange(min, max) {
     return Math.random() * (max - min) + min;
@@ -21,6 +19,13 @@ const fireConfetti = () => {
     origin: { y: 0.5 },
   });
 };
+
+const importPersist = import(
+  "https://cdn.jsdelivr.net/npm/@alpinejs/persist@3.x.x/dist/module.esm.js"
+).then((module) => module.default);
+const Alpine = await import(
+  "https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/module.esm.js"
+).then((module) => module.default);
 
 document.addEventListener("alpine:init", () => {
   function shuffleArray(array) {
@@ -306,5 +311,6 @@ document.addEventListener("alpine:initialized", () => {
 });
 
 window.Alpine = Alpine;
+const persist = await importPersist;
 Alpine.plugin(persist);
 Alpine.start();

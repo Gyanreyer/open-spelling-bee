@@ -1,5 +1,5 @@
 const pluginWebc = require("@11ty/eleventy-plugin-webc");
-const { minify: minifyJS } = require("terser");
+const esbuild = require("esbuild");
 const { minify: minifyHTML } = require("html-minifier-terser");
 const through = require("through2");
 
@@ -21,7 +21,9 @@ module.exports = (eleventyConfig) => {
         return through(function (chunk, enc, done) {
           const output = chunk.toString();
           if (jsAssetPathRegex.test(src)) {
-            minifyJS(output).then((result) => done(null, result.code));
+            esbuild
+              .transform(output, { minify: true })
+              .then((result) => done(null, result.code));
           } else if (src.endsWith(".json")) {
             done(null, JSON.stringify(JSON.parse(output)));
           } else {

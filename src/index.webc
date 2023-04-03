@@ -13,14 +13,6 @@ meta:
     <meta name="generator" :content="eleventy.generator" />
     <title @html="meta.title"></title>
     <style @raw="getBundle('css')" webc:keep></style>
-    <script type="importmap" webc:keep>
-      {
-        "imports": {
-          "alpinejs": "https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/module.esm.js",
-          "@alpinejs/persist": "https://cdn.jsdelivr.net/npm/@alpinejs/persist@3.x.x/dist/module.esm.js"
-        }
-      }
-    </script>
     <script type="module" src="/js/initServiceWorker.mjs" webc:keep></script>
     <link rel="stylesheet" href="./styles/reset.css" />
     <link rel="manifest" href="/manifest.json" />

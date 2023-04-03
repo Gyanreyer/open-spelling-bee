@@ -21,8 +21,8 @@
     "@11ty/eleventy": "^2.0.1",
     "@11ty/eleventy-plugin-webc": "^0.10.1",
     "@types/node": "^18.15.3",
+    "esbuild": "^0.17.15",
     "html-minifier-terser": "^7.1.0",
-    "terser": "^5.16.8",
     "through2": "^4.0.2",
     "workerpool": "^6.4.0"
   }

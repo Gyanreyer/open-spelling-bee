@@ -1,12 +1,5 @@
-const cacheName = "open-spelling-bee-0.2.0";
-const cacheFiles = [
-  "/",
-  "/index.html",
-  "/words/en.json",
-  "/js/alpine.mjs",
-  "/js/alpine-persist.mjs",
-  "/js/alea.min.js",
-];
+const cacheName = "open-spelling-bee-0.5.0";
+const cacheFiles = ["/index.html", "/words/en.json"];
 
 self.addEventListener("install", (e) => {
   console.log("[Service Worker] Installed");
@@ -24,13 +17,17 @@ self.addEventListener("fetch", (e) => {
 
   e.respondWith(
     (async () => {
-      const r = await caches.match(e.request);
+      const cachedResponse = await caches.match(e.request);
       console.log(`[Service Worker] Fetching resource: ${e.request.url}`);
-      if (r) {
-        return r;
+      if (cachedResponse) {
+        return cachedResponse;
       }
       const response = await fetch(e.request);
       const cache = await caches.open(cacheName);
+      if (new URL(e.request.url).hostname === "cdn.jsdelivr.net") {
+        // Cache CDN responses
+        await cache.add(e.request);
+      }
       cache.put(e.request, response.clone());
       return response;
     })()
