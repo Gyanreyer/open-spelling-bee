@@ -2,3 +2,9 @@
   <current-score></current-score>
   <previous-guesses></previous-guesses>
 </header>
+<style webc:scoped>
+  :host {
+    max-width: 25rem;
+    margin: 0 auto;
+  }
+</style>

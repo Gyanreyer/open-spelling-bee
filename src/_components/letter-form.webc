@@ -17,16 +17,23 @@
       Delete
     </button>
     <button
+      class="shuffle"
       type="button"
       x-on:click="$store.game.shuffleOuterLetters()"
       aria-label="Shuffle the outer letters"
     >
-      Shuffle
+      <shuffle-icon width="2rem" height="2rem"></shuffle-icon>
     </button>
     <button type="submit">Enter</button>
   </div>
 </form>
 <style webc:scoped>
+  :host {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
   .form-buttons {
     display: flex;
     justify-content: center;
@@ -35,6 +42,19 @@
 
   .form-buttons button {
     font-size: 1rem;
+    transition-property: transform, opacity;
+    transition-duration: 0.2s;
+  }
+
+  .form-buttons button:active {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+
+  .form-buttons button.shuffle {
+    background: none;
+    border: none;
+    padding: 0;
   }
 
   .form-buttons button.delete,

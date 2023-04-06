@@ -7,13 +7,13 @@ meta:
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <script type="module" src="/js/initServiceWorker.mjs" webc:keep></script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" :content="meta.description" />
     <meta name="generator" :content="eleventy.generator" />
     <title @html="meta.title"></title>
     <style @raw="getBundle('css')" webc:keep></style>
-    <script type="module" src="/js/initServiceWorker.mjs" webc:keep></script>
     <link rel="stylesheet" href="./styles/reset.css" />
     <link rel="manifest" href="/manifest.json" />
   </head>

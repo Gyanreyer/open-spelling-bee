@@ -22,10 +22,10 @@ const fireConfetti = () => {
 
 const importPersist = import(
   "https://cdn.jsdelivr.net/npm/@alpinejs/persist@3.x.x/dist/module.esm.js"
-).then((module) => module.default);
-const Alpine = await import(
-  "https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/module.esm.js"
-).then((module) => module.default);
+);
+const Alpine = (
+  await import("https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/module.esm.js")
+).default;
 
 document.addEventListener("alpine:init", () => {
   function shuffleArray(array) {
@@ -311,6 +311,6 @@ document.addEventListener("alpine:initialized", () => {
 });
 
 window.Alpine = Alpine;
-const persist = await importPersist;
+const { default: persist } = await importPersist;
 Alpine.plugin(persist);
 Alpine.start();

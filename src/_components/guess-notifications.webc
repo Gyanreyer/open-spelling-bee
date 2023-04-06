@@ -41,9 +41,8 @@
   }
 
   .notification.invalid-guess {
-    background-color: #fdd000;
-    background-color: oklch(87% 0.2 93);
-    color: #1a1a1a;
+    background-color: var(--yellow);
+    color: var(--black);
   }
 
   @keyframes shake {

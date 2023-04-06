@@ -1,30 +1,45 @@
 <div webc:root="override">
-  <input id="guess-input" type="text"
+  <input
+    type="text"
+    maxlength="25"
+    id="guess-input"
     x-model="guess"
-    x-on:input="guess = $event.target.value.toLowerCase().replace($store.game.invalidWordRegex, '')"
     x-bind:aria-label="`Input your guess. The word must contain the letter ${$store.game.centerLetter} along with any of the letters ${$store.game.outerLetters.join(', ')}.`"
-  ></input>
-  <div class="input-underline" x-text="guess" aria-hidden></div>
+    x-on:input="guess = $event.target.value.toLowerCase().replaceAll($store.game.invalidWordRegex, '')"
+  />
+  <div
+    class="guess-display"
+    x-html="guess.replaceAll($store.game.centerLetter, `<span class='center-letter'>${$store.game.centerLetter}</span>`)"
+    aria-hidden
+  ></div>
 </div>
 <style webc:scoped>
   :host {
+    display: inline-block;
     position: relative;
-    margin: 0 auto;
+    margin: 0 auto 1rem;
+  }
+
+  #guess-input,
+  .guess-display {
     font-size: 3rem;
     text-transform: uppercase;
+    text-align: center;
+    height: 1em;
+    line-height: 1em;
   }
 
   #guess-input {
-    text-align: center;
-
+    color: transparent;
+    caret-color: var(--yellow);
     background: none;
     border: none;
 
-    font-size: inherit;
-    text-transform: inherit;
-
+    position: absolute;
     display: block;
     margin: 0 auto;
+    top: 0;
+    left: 0;
     width: 100%;
   }
 
@@ -32,30 +47,28 @@
     outline: none;
   }
 
-  .input-underline {
-    position: absolute;
+  .guess-display {
+    position: relative;
     pointer-events: none;
-    height: 100%;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    color: transparent;
     min-width: 3ch;
   }
-  
-  .input-underline::after {
+
+  .guess-display::after {
     content: "";
     position: absolute;
-    top: calc(100% + 0.1rem);
+    top: calc(100% + 0.2rem);
     left: 0;
     width: 100%;
     height: 1px;
-    background: #1A1A1A;
+    background: var(--black);
   }
 
-  #guess-input:focus + .input-underline::after {
-    background-color: #fdd000;
-    background-color: oklch(87% 0.2 93);
+  .guess-display .center-letter {
+    color: var(--yellow);
+  }
+
+  #guess-input:focus + .guess-display::after {
+    background-color: var(--yellow);
     height: 2px;
   }
 </style>

@@ -1,4 +1,4 @@
-const cacheName = "open-spelling-bee-0.6.0";
+const cacheName = "open-spelling-bee-0.10.0";
 const cacheFiles = ["/index.html", "/js/main.mjs", "/words/en.json"];
 
 self.addEventListener("install", (e) => {
