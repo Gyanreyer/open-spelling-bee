@@ -6,16 +6,8 @@
     aria-label="Show previous guesses"
     x-bind:aria-disabled="$store.game.guessedWords.length === 0"
   ></button>
-  <dialog x-ref="prevguessdialog" x-on:keydown.escape="$el.close()">
+  <modal @ref="prevguessdialog">
     <h2 x-text="`You have found ${$store.game.guessedWords.length} words`"></h2>
-    <button
-      autofocus
-      type="button"
-      x-on:click="$refs.prevguessdialog.close()"
-      aria-label="close"
-    >
-      <close-icon width="24" height="24"></close-icon>
-    </button>
     <div id="word-page-wrapper">
       <template x-for="(page, index) in guessedWordPages">
         <ul
@@ -36,12 +28,7 @@
         ></button>
       </template>
     </div>
-  </dialog>
-  <div
-    class="dialog-darkened-overlay"
-    x-on:click="$refs.prevguessdialog.close()"
-    aria-hidden
-  ></div>
+  </modal>
 </div>
 <style webc:scoped>
   :host > button {
@@ -60,62 +47,6 @@
 
   :host > button[aria-disabled="true"] {
     opacity: 0.6;
-  }
-
-  dialog {
-    z-index: 100;
-    display: block;
-    padding: 2rem;
-    visibility: hidden;
-    opacity: 0;
-    border-radius: 0.5rem;
-    border: none;
-    width: 20rem;
-    max-width: calc(100% - 6rem);
-    max-height: calc(100vh - 6rem);
-    overflow-y: scroll;
-    top: 3rem;
-    transform: translateY(1rem);
-    --transition-duration: 0.2s;
-    transition: transform var(--transition-duration),
-      opacity var(--transition-duration),
-      visibility 0s var(--transition-duration);
-  }
-
-  dialog[open] {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-    transition: transform var(--transition-duration),
-      opacity var(--transition-duration);
-  }
-
-  dialog button[aria-label="close"] {
-    position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
-    padding: 0.5rem;
-    border: none;
-    background: none;
-    color: var(--gray);
-    cursor: pointer;
-    transition: color 0.2s;
-  }
-
-  .dialog-darkened-overlay {
-    position: fixed;
-    inset: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 99;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s;
-  }
-
-  dialog[open] ~ .dialog-darkened-overlay {
-    opacity: 1;
-    backdrop-filter: blur(4px);
-    pointer-events: auto;
   }
 
   dialog h2 {
