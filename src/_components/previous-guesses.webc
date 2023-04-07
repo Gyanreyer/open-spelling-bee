@@ -1,11 +1,28 @@
 <div webc:root="override" x-data="previousGuesses">
   <button
     type="button"
+    class="prev-guess-modal-btn"
     x-on:click="if($store.game.guessedWords.length) $refs.prevguessdialog.showModal()"
-    x-text="mostRecentGuessedWords.length ? mostRecentGuessedWords.join('&nbsp; ') : 'No words guessed yet'"
-    aria-label="Show previous guesses"
+    x-bind:aria-label="$store.game.guessedWords.length > 0 ? 'Show previous guesses' : null"
     x-bind:aria-disabled="$store.game.guessedWords.length === 0"
-  ></button>
+    x-data="{isInitialRender: true}"
+    x-init="$nextTick(()=>isInitialRender=false)"
+  >
+    <template x-if="$store.game.guessedWords.length === 0">
+      <span>No words guessed yet</span>
+    </template>
+    <template x-for="word in mostRecentGuessedWords" x-bind:key="word">
+      <span
+        x-text="word + '&nbsp;'"
+        x-data="{show: isInitialRender}"
+        x-show="show"
+        x-init="$nextTick(()=>show=true)"
+        x-transition:enter="enter"
+        x-transition:enter-start="enter-start"
+        x-transition:enter-end="enter-end"
+      ></span>
+    </template>
+  </button>
   <modal x-ref="prevguessdialog">
     <h2 x-text="`You have found ${$store.game.guessedWords.length} words`"></h2>
     <div
@@ -38,22 +55,46 @@
   </modal>
 </div>
 <style webc:scoped>
-  :host > button {
+  .prev-guess-modal-btn {
     display: block;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     width: 100%;
     margin: 1rem 0;
-    padding: 0.5rem;
+    padding: 0.5rem 1rem;
     border-radius: 0.3rem;
     background-color: var(--gray);
     border: none;
     box-shadow: var(--shadow);
   }
 
-  :host > button[aria-disabled="true"] {
+  .prev-guess-modal-btn[aria-disabled="true"] {
     opacity: 0.6;
+  }
+
+  .prev-guess-modal-btn span {
+    display: inline-block;
+    margin-right: 0.5ch;
+  }
+
+  .prev-guess-modal-btn span.enter {
+    transition: opacity 0.15s, transform 0.15s;
+  }
+
+  .prev-guess-modal-btn span.enter-start {
+    opacity: 0;
+    transform: translateX(20%);
+  }
+
+  .prev-guess-modal-btn span.enter-start:only-of-type {
+    /* If this is the first word, animate up instead of sideways */
+    transform: translateY(20%);
+  }
+
+  .prev-guess-modal-btn span.enter-end {
+    opacity: 1;
+    transform: translateX(0);
   }
 
   dialog h2 {
