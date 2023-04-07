@@ -49,6 +49,7 @@
           type="button"
           x-bind:id="`page-btn-${index}`"
           x-on:click="const wordPageWrapper = $refs.prevguessdialog.querySelector('#word-page-wrapper'); wordPageWrapper.scrollTo({ top: 0, left: wordPageWrapper.querySelector(`#word-page-${index}`).offsetLeft, behavior: 'smooth' })"
+          x-bind:aria-label="`Go to page ${index + 1}`"
         ></button>
       </template>
     </div>
@@ -142,6 +143,7 @@
     position: relative;
     width: 0.8rem;
     height: 0.8rem;
+    padding: 0;
     border-radius: 50%;
     background: var(--gray);
     border: none;

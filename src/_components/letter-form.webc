@@ -57,10 +57,14 @@
     padding: 0;
   }
 
+  .form-buttons button.shuffle svg {
+    fill: var(--black);
+  }
+
   .form-buttons button.delete,
   .form-buttons button[type="submit"] {
     background: none;
-    border: 1px solid black;
+    border: 1px solid var(--black);
     border-radius: 1rem;
     padding: 0.3rem 1rem;
   }

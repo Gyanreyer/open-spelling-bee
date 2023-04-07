@@ -9,6 +9,8 @@ module.exports = (eleventyConfig) => {
     components: ["src/_components/**/*.webc"],
   });
 
+  eleventyConfig.addWatchTarget("src/styles/");
+
   const jsAssetPathRegex = /\.m?js$/;
 
   eleventyConfig.addPassthroughCopy(

@@ -2,7 +2,7 @@
   <template
     x-for="(outerLetter, index) in $store.game.outerLetters"
     webc:keep
-    x-bind:key="index"
+    x-bind:key="outerLetter"
   >
     <button
       class="outer-letter"

@@ -31,3 +31,14 @@ canvas.confetti {
     display: none;
   }
 }
+
+button {
+  appearance: none;
+  -webkit-appearance: none;
+  color: var(--black);
+  touch-action: manipulation;
+}
+
+button[type="submit"] {
+  font-weight: normal;
+}
