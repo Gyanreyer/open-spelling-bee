@@ -1,8 +1,8 @@
 <div webc:root="override" class="letter-buttons">
   <template
-    x-for="outerLetter in $store.game.outerLetters"
+    x-for="(outerLetter, index) in $store.game.outerLetters"
     webc:keep
-    x-bind:key="outerLetter"
+    x-bind:key="index"
   >
     <button
       class="outer-letter"

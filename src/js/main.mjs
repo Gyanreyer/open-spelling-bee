@@ -28,6 +28,10 @@ const Alpine = (
 ).default;
 
 document.addEventListener("alpine:init", () => {
+  function getID() {
+    return Math.random().toString(36);
+  }
+
   function shuffleArray(array) {
     const arrayCopy = array.slice();
     for (let i = arrayCopy.length - 1; i > 0; i--) {
@@ -181,7 +185,7 @@ document.addEventListener("alpine:init", () => {
       };
     },
     showNotification(notificationConfig) {
-      const id = Math.random().toString(36);
+      const id = getID();
       const aliveTime = 1500 + notificationConfig.message.length * 50;
 
       this.notifications.push({
@@ -330,16 +334,21 @@ document.addEventListener("alpine:init", () => {
   );
 
   Alpine.data("previousGuesses", () => ({
+    mostRecentGuessedWords: [],
     guessedWordPages: [],
     init() {
       this.$watch("$store.game.guessedWords", (value) => {
+        this.mostRecentGuessedWords = value.slice().reverse();
         this.guessedWordPages = value
           .slice()
           .sort()
           .reduce((acc, word) => {
-            const lastPage = acc[acc.length - 1];
+            const lastPage = acc[acc.length - 1]?.words;
             if (!lastPage || lastPage.length === 24) {
-              acc.push([word]);
+              acc.push({
+                id: getID(),
+                words: [word],
+              });
             } else {
               lastPage.push(word);
             }

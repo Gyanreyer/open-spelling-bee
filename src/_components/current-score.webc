@@ -1,24 +1,24 @@
 <div webc:root="override">
   <button
     type="button"
-    x-on:click="$refs.scoremodal.show()"
+    x-on:click="$refs.scoremodal.showModal()"
     class="milestone-display"
   >
     <div
       class="current-milestone-label"
-      x-text="$store.game.scoreMilestones.findLast(({score})=> score <= $store.game.currentScore).name"
+      x-text="$store.game.scoreMilestones.findLast(({score})=> score <= $store.game.currentScore)?.name"
     ></div>
     <div class="progress-bar-wrapper">
       <progress
         aria-label="Current score"
         x-bind:value="$store.game.currentScore || '0'"
-        x-bind:max="$store.game.scoreMilestones.at(-1).score"
+        x-bind:max="$store.game.scoreMilestones.at(-2).score"
         x-text="`${$store.game.currentScore} points`"
       ></progress>
       <div
         class="current-score-dot"
         aria-hidden
-        x-bind:style="`--width: ${$store.game.currentScore.toString().length + 1.2}ch; left: ${100 * ($store.game.currentScore / Math.floor($store.game.totalPossibleScore * 0.7))}%;`"
+        x-bind:style="`--width: ${$store.game.currentScore.toString().length + 1.2}ch; left: ${100 * ($store.game.currentScore / $store.game.scoreMilestones.at(-2).score)}%;`"
       >
         <span x-text="$store.game.currentScore"></span>
       </div>
@@ -32,7 +32,7 @@
       </template>
     </div>
   </button>
-  <modal @ref="scoremodal">
+  <modal x-ref="scoremodal">
     <h2>Rankings</h2>
     <ol>
       <template x-for="milestone in $store.game.scoreMilestones.slice(0, -1)">

@@ -1,26 +1,29 @@
 <div webc:root="override" x-data="previousGuesses">
   <button
     type="button"
-    x-on:click="if($store.game.guessedWords.length) $refs.prevguessdialog.show()"
-    x-text="$store.game.guessedWords.length ? $store.game.guessedWords.slice().reverse().join('&nbsp; ') : 'No words guessed yet'"
+    x-on:click="if($store.game.guessedWords.length) $refs.prevguessdialog.showModal()"
+    x-text="mostRecentGuessedWords.length ? mostRecentGuessedWords.join('&nbsp; ') : 'No words guessed yet'"
     aria-label="Show previous guesses"
     x-bind:aria-disabled="$store.game.guessedWords.length === 0"
   ></button>
-  <modal @ref="prevguessdialog">
+  <modal x-ref="prevguessdialog">
     <h2 x-text="`You have found ${$store.game.guessedWords.length} words`"></h2>
     <div id="word-page-wrapper">
-      <template x-for="(page, index) in guessedWordPages">
+      <template x-for="(page, index) in guessedWordPages" x-bind:key="page.id">
         <ul
           x-data="guessedWordPage"
           x-bind:id="`word-page-${index}`"
           x-bind:page-button-id="`page-btn-${index}`"
           class="word-list"
-          x-html="page.map((word)=>`<li>${word}</li>`).join('')"
-        ></ul>
+        >
+          <template x-for="word in page.words" x-bind:key="word">
+            <li x-text="word" x-data></li>
+          </template>
+        </ul>
       </template>
     </div>
     <div class="page-scroll-buttons">
-      <template x-for="(page, index) in guessedWordPages">
+      <template x-for="(page, index) in guessedWordPages" x-bind:key="index">
         <button
           type="button"
           x-bind:id="`page-btn-${index}`"
@@ -54,7 +57,7 @@
   }
 
   #word-page-wrapper {
-    overflow-x: scroll;
+    overflow-x: auto;
     scroll-snap-type: x mandatory;
     display: flex;
     flex-flow: row nowrap;
