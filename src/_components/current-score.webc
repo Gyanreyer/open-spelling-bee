@@ -1,13 +1,14 @@
-<div webc:root="override">
+<div
+  webc:root="override"
+  x-data="{ currentMilestone: $store.game.scoreMilestones[0] }"
+  x-init="$watch('$store.game.currentScore', (value) => { currentMilestone = $store.game.scoreMilestones.findLast(({score})=> score <= value) })"
+>
   <button
     type="button"
     x-on:click="$refs.scoremodal.showModal()"
     class="milestone-display"
   >
-    <div
-      class="current-milestone-label"
-      x-text="$store.game.scoreMilestones.findLast(({score})=> score <= $store.game.currentScore)?.name"
-    ></div>
+    <div class="current-milestone-label" x-text="currentMilestone.name"></div>
     <div class="progress-bar-wrapper">
       <progress
         aria-label="Current score"
@@ -34,10 +35,16 @@
   </button>
   <modal x-ref="scoremodal">
     <h2>Rankings</h2>
+    <p>Current score: <span x-text="$store.game.currentScore"></span></p>
+    <p
+      x-text="const nextMilestone = $store.game.scoreMilestones[Math.min($store.game.scoreMilestones.indexOf(currentMilestone) + 1, $store.game.scoreMilestones.length)]; return `${nextMilestone.score - $store.game.currentScore} points to next rank: ${nextMilestone.name}`"
+    ></p>
     <ol>
-      <template x-for="milestone in $store.game.scoreMilestones.slice(0, -1)">
-        <li>
-          <span x-text="milestone.name"></span>
+      <template
+        x-for="(milestone, index) in $store.game.scoreMilestones.slice(0, -1)"
+      >
+        <li x-bind:class="milestone === currentMilestone ? 'current' : ''">
+          <span x-text="milestone.name" class="name"></span>
           <span x-text="`${milestone.score} points`"></span>
         </li>
       </template>
@@ -138,5 +145,36 @@
     width: 0.2rem;
     height: 0.2rem;
     background-color: papayawhip;
+  }
+
+  dialog ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column-reverse;
+  }
+
+  dialog li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    margin: 0 0 0 -0.5rem;
+    border-radius: 1rem;
+    opacity: 0.3;
+  }
+
+  dialog li.current,
+  dialog li.current ~ li {
+    opacity: 1;
+  }
+
+  dialog li.current {
+    background-color: var(--yellow);
+  }
+
+  dialog li.current .name {
+    font-weight: bold;
   }
 </style>
