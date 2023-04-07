@@ -304,6 +304,52 @@ document.addEventListener("alpine:init", () => {
     "x-text": "letter",
     "@click": "guess += letter",
   }));
+
+  const wordPageIntersectionObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        const pageButton = document.getElementById(
+          entry.target.getAttribute("page-button-id")
+        );
+        if (pageButton) {
+          pageButton.style.setProperty(
+            "--page-scroll-pct",
+            `${entry.intersectionRatio * 100}%`
+          );
+        }
+      });
+    },
+    {
+      root: document.getElementById("word-page-wrapper"),
+      threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1],
+    }
+  );
+
+  Alpine.data("previousGuesses", () => ({
+    guessedWordPages: [],
+    init() {
+      this.$watch("$store.game.guessedWords", (value) => {
+        this.guessedWordPages = value
+          .slice()
+          .sort()
+          .reduce((acc, word) => {
+            const lastPage = acc[acc.length - 1];
+            if (!lastPage || lastPage.length === 24) {
+              acc.push([word]);
+            } else {
+              lastPage.push(word);
+            }
+            return acc;
+          }, []);
+      });
+    },
+  }));
+
+  Alpine.data("guessedWordPage", () => ({
+    init() {
+      wordPageIntersectionObserver.observe(this.$el);
+    },
+  }));
 });
 
 document.addEventListener("alpine:initialized", () => {

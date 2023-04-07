@@ -1,4 +1,4 @@
-<div webc:root="override">
+<div webc:root="override" x-data="previousGuesses">
   <button
     type="button"
     x-on:click="if($store.game.guessedWords.length) $refs.prevguessdialog.show()"
@@ -6,16 +6,42 @@
     aria-label="Show previous guesses"
     x-bind:aria-disabled="$store.game.guessedWords.length === 0"
   ></button>
-  <dialog x-ref="prevguessdialog">
+  <dialog x-ref="prevguessdialog" x-on:keydown.escape="$el.close()">
     <h2 x-text="`You have found ${$store.game.guessedWords.length} words`"></h2>
-    <button autofocus type="button" x-on:click="$refs.prevguessdialog.close()">Close</button>
-    <div class="word-list">
-      <template x-for="word in $store.game.guessedWords.slice().sort()" x-bind:key="word">
-        <p x-text="word"></span>
+    <button
+      autofocus
+      type="button"
+      x-on:click="$refs.prevguessdialog.close()"
+      aria-label="close"
+    >
+      <close-icon width="24" height="24"></close-icon>
+    </button>
+    <div id="word-page-wrapper">
+      <template x-for="(page, index) in guessedWordPages">
+        <ul
+          x-data="guessedWordPage"
+          x-bind:id="`word-page-${index}`"
+          x-bind:page-button-id="`page-btn-${index}`"
+          class="word-list"
+          x-html="page.map((word)=>`<li>${word}</li>`).join('')"
+        ></ul>
+      </template>
+    </div>
+    <div class="page-scroll-buttons">
+      <template x-for="(page, index) in guessedWordPages">
+        <button
+          type="button"
+          x-bind:id="`page-btn-${index}`"
+          x-on:click="const wordPageWrapper = $refs.prevguessdialog.querySelector('#word-page-wrapper'); wordPageWrapper.scrollTo({ top: 0, left: wordPageWrapper.querySelector(`#word-page-${index}`).offsetLeft, behavior: 'smooth' })"
+        ></button>
       </template>
     </div>
   </dialog>
-  <div class="dialog-darkened-overlay" aria-hidden></div>
+  <div
+    class="dialog-darkened-overlay"
+    x-on:click="$refs.prevguessdialog.close()"
+    aria-hidden
+  ></div>
 </div>
 <style webc:scoped>
   :host > button {
@@ -29,7 +55,7 @@
     border-radius: 0.3rem;
     background-color: var(--gray);
     border: none;
-    box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.25);
+    box-shadow: var(--shadow);
   }
 
   :host > button[aria-disabled="true"] {
@@ -44,19 +70,36 @@
     opacity: 0;
     border-radius: 0.5rem;
     border: none;
-    width: calc(100% - 6rem);
-    max-width: 25rem;
-    top: 50%;
-    transform: translateY(calc(1rem - 50%));
+    width: 20rem;
+    max-width: calc(100% - 6rem);
+    max-height: calc(100vh - 6rem);
+    overflow-y: scroll;
+    top: 3rem;
+    transform: translateY(1rem);
     --transition-duration: 0.2s;
-    transition: transform var(--transition-duration), opacity var(--transition-duration), visibility 0s var(--transition-duration);
+    transition: transform var(--transition-duration),
+      opacity var(--transition-duration),
+      visibility 0s var(--transition-duration);
   }
 
   dialog[open] {
     opacity: 1;
     visibility: visible;
-    transform: translateY(-50%);
-    transition: transform var(--transition-duration), opacity var(--transition-duration);
+    transform: translateY(0);
+    transition: transform var(--transition-duration),
+      opacity var(--transition-duration);
+  }
+
+  dialog button[aria-label="close"] {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    padding: 0.5rem;
+    border: none;
+    background: none;
+    color: var(--gray);
+    cursor: pointer;
+    transition: color 0.2s;
   }
 
   .dialog-darkened-overlay {
@@ -72,21 +115,72 @@
   dialog[open] ~ .dialog-darkened-overlay {
     opacity: 1;
     backdrop-filter: blur(4px);
+    pointer-events: auto;
+  }
+
+  dialog h2 {
+    margin: 1.5rem 0 0.5rem;
+  }
+
+  #word-page-wrapper {
+    overflow-x: scroll;
+    scroll-snap-type: x mandatory;
+    display: flex;
+    flex-flow: row nowrap;
+    gap: 2rem;
   }
 
   .word-list {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(15, 1fr);
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(12, 1fr);
     grid-auto-flow: column;
     gap: 1rem 2rem;
+    margin: 0;
     padding: 1.5rem 0 2rem;
     font-size: 1.2rem;
+    width: 100%;
+    min-width: 100%;
+    list-style: none;
+    scroll-snap-align: center;
   }
 
-  .word-list p {
+  .word-list li {
     margin: 0;
     padding-bottom: 0.25rem;
     border-bottom: 1px solid var(--gray);
+  }
+
+  .page-scroll-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  .page-scroll-buttons button {
+    position: relative;
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 50%;
+    background: var(--gray);
+    border: none;
+    box-shadow: var(--shadow);
+    --page-scroll-pct: 0%;
+  }
+
+  .page-scroll-buttons button::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background-color: var(--yellow);
+    transform: scale(var(--page-scroll-pct));
+    transform-origin: center;
+    transition: transform 0.1s;
   }
 </style>
