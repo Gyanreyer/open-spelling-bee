@@ -239,6 +239,10 @@ document.addEventListener("alpine:init", () => {
         (total, word) => total + getWordScore(word).score,
         0
       );
+      this.scoreMilestones = this.scoreMilestones.map((milestone) => ({
+        ...milestone,
+        score: Math.floor(this.totalPossibleScore * milestone.percent),
+      }));
 
       // Sanitize the user's persisted list of guessed words to ensure there aren't duplicate words
       this.guessedWords = Array.from(new Set(this.guessedWords));

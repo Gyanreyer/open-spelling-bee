@@ -1,36 +1,56 @@
 <div webc:root="override">
-  <div
-    class="current-milestone-label"
-    x-text="$store.game.scoreMilestones.findLast(({percent})=> Math.floor(percent * $store.game.totalPossibleScore) <= $store.game.currentScore).name"
-  ></div>
-  <div class="progress-bar-wrapper">
-    <progress
-      aria-label="Current score"
-      x-bind:value="$store.game.currentScore || '0'"
-      x-bind:max="Math.floor($store.game.totalPossibleScore * 0.7)"
-      x-text="`${$store.game.currentScore} points`"
-    ></progress>
+  <button
+    type="button"
+    x-on:click="$refs.scoremodal.show()"
+    class="milestone-display"
+  >
     <div
-      class="current-score-dot"
-      aria-hidden
-      x-bind:style="`--width: ${$store.game.currentScore.toString().length + 1.2}ch; left: ${100 * ($store.game.currentScore / Math.floor($store.game.totalPossibleScore * 0.7))}%;`"
-    >
-      <span x-text="$store.game.currentScore"></span>
-    </div>
-    <template x-for="milestone in $store.game.scoreMilestones.slice(1, -1)">
+      class="current-milestone-label"
+      x-text="$store.game.scoreMilestones.findLast(({score})=> score <= $store.game.currentScore).name"
+    ></div>
+    <div class="progress-bar-wrapper">
+      <progress
+        aria-label="Current score"
+        x-bind:value="$store.game.currentScore || '0'"
+        x-bind:max="$store.game.scoreMilestones.at(-1).score"
+        x-text="`${$store.game.currentScore} points`"
+      ></progress>
       <div
-        class="milestone-dot"
-        x-bind:class="milestone.percent * $store.game.totalPossibleScore <= $store.game.currentScore ? 'filled' : ''"
+        class="current-score-dot"
         aria-hidden
-        x-bind:style="`left: ${100 * Math.min(1, (milestone.percent / 0.7))}%`"
-      ></div>
-    </template>
-  </div>
+        x-bind:style="`--width: ${$store.game.currentScore.toString().length + 1.2}ch; left: ${100 * ($store.game.currentScore / Math.floor($store.game.totalPossibleScore * 0.7))}%;`"
+      >
+        <span x-text="$store.game.currentScore"></span>
+      </div>
+      <template x-for="milestone in $store.game.scoreMilestones.slice(1, -1)">
+        <div
+          class="milestone-dot"
+          x-bind:class="milestone.score <= $store.game.currentScore ? 'filled' : ''"
+          aria-hidden
+          x-bind:style="`left: ${100 * Math.min(1, (milestone.percent / 0.7))}%`"
+        ></div>
+      </template>
+    </div>
+  </button>
+  <modal @ref="scoremodal">
+    <h2>Rankings</h2>
+    <ol>
+      <template x-for="milestone in $store.game.scoreMilestones.slice(0, -1)">
+        <li>
+          <span x-text="milestone.name"></span>
+          <span x-text="`${milestone.score} points`"></span>
+        </li>
+      </template>
+    </ol>
+  </modal>
 </div>
 <style webc:scoped>
-  :host {
+  .milestone-display {
     display: flex;
     align-items: center;
+    width: 100%;
+    background: none;
+    border: none;
   }
 
   .current-milestone-label {
