@@ -313,54 +313,84 @@ document.addEventListener("alpine:init", () => {
     "@click": "guess += letter",
   }));
 
-  const wordPageIntersectionObserver = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        const pageButton = document.getElementById(
-          entry.target.getAttribute("page-button-id")
-        );
-        if (pageButton) {
-          pageButton.style.setProperty(
-            "--page-scroll-pct",
-            `${entry.intersectionRatio * 100}%`
-          );
+  let wordPageIntersectionObserver = null;
+
+  // MutationObserver to detect when a word page is removed from the DOM so we can stop observing it
+  const wordPageMutationObserver = new MutationObserver((mutationList) => {
+    for (const mutation of mutationList) {
+      for (const removedNode of mutation.removedNodes) {
+        wordPageIntersectionObserver?.unobserve(removedNode);
+      }
+    }
+  });
+
+  Alpine.data("wordPageWrapper", () => ({
+    init() {
+      wordPageIntersectionObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            const pageButton = document.getElementById(
+              entry.target.getAttribute("page-button-id")
+            );
+            if (pageButton) {
+              pageButton.style.setProperty(
+                "--page-scroll-pct",
+                `${entry.intersectionRatio * 100}%`
+              );
+            }
+          });
+        },
+        {
+          root: document.getElementById("word-page-wrapper"),
+          // The observer will fire every time an element's visibility changes by >=10% to allow us
+          // to have a slightly more fine-grained/smooth animation of the page buttons
+          threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1],
         }
+      );
+      wordPageMutationObserver.observe(this.$el, {
+        childList: true,
       });
     },
-    {
-      root: document.getElementById("word-page-wrapper"),
-      threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1],
-    }
-  );
+  }));
 
   Alpine.data("previousGuesses", () => ({
+    maxPageSize: 24,
     mostRecentGuessedWords: [],
     guessedWordPages: [],
     init() {
       this.$watch("$store.game.guessedWords", (value) => {
-        this.mostRecentGuessedWords = value.slice().reverse();
-        this.guessedWordPages = value
-          .slice()
-          .sort()
-          .reduce((acc, word) => {
-            const lastPage = acc[acc.length - 1]?.words;
-            if (!lastPage || lastPage.length === 24) {
-              acc.push({
-                id: getID(),
-                words: [word],
-              });
-            } else {
-              lastPage.push(word);
-            }
-            return acc;
-          }, []);
+        const mostRecentGuessedWords = new Array(value.length);
+        const guessedWordPages = [];
+
+        for (let i = 0, wordCount = value.length; i < wordCount; ++i) {
+          const word = value[i];
+
+          // The guessedWords array is in chronological order of when the guesses were submitted,
+          // so we just need to reverse it
+          mostRecentGuessedWords[wordCount - 1 - i] = word;
+
+          // Split the guessed words into pages of <=24 words each
+          const lastPage = guessedWordPages[guessedWordPages.length - 1];
+
+          if (!lastPage || lastPage.words.length === this.maxPageSize) {
+            guessedWordPages.push({
+              id: getID(),
+              words: [word],
+            });
+          } else {
+            lastPage.words.push(word);
+          }
+        }
+
+        this.mostRecentGuessedWords = mostRecentGuessedWords;
+        this.guessedWordPages = guessedWordPages;
       });
     },
   }));
 
   Alpine.data("guessedWordPage", () => ({
     init() {
-      wordPageIntersectionObserver.observe(this.$el);
+      wordPageIntersectionObserver?.observe(this.$el);
     },
   }));
 });

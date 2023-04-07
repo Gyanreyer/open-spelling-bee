@@ -8,7 +8,11 @@
   ></button>
   <modal x-ref="prevguessdialog">
     <h2 x-text="`You have found ${$store.game.guessedWords.length} words`"></h2>
-    <div id="word-page-wrapper">
+    <div
+      id="word-page-wrapper"
+      x-data="wordPageWrapper"
+      x-bind:style="`--max-row-count: ${maxPageSize/2};`"
+    >
       <template x-for="(page, index) in guessedWordPages" x-bind:key="page.id">
         <ul
           x-data="guessedWordPage"
@@ -67,7 +71,7 @@
   .word-list {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-template-rows: repeat(12, 1fr);
+    grid-template-rows: repeat(var(--max-row-count), 1fr);
     grid-auto-flow: column;
     gap: 1rem 2rem;
     margin: 0;
