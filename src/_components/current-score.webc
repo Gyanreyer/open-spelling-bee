@@ -19,7 +19,7 @@
       <div
         class="current-score-dot"
         aria-hidden
-        x-bind:style="`--width: ${$store.game.currentScore.toString().length + 1.2}ch; left: ${100 * ($store.game.currentScore / $store.game.scoreMilestones.at(-2).score)}%;`"
+        x-bind:style="`--width: ${$store.game.currentScore.toString().length + 1.2}ch; left: ${100 * Math.min(1, $store.game.currentScore / $store.game.scoreMilestones.at(-2).score)}%;`"
       >
         <span x-text="$store.game.currentScore"></span>
       </div>
@@ -36,12 +36,17 @@
   <modal x-ref="scoremodal">
     <h2>Rankings</h2>
     <p>Current score: <span x-text="$store.game.currentScore"></span></p>
-    <p
-      x-text="const nextMilestone = $store.game.scoreMilestones[Math.min($store.game.scoreMilestones.indexOf(currentMilestone) + 1, $store.game.scoreMilestones.length)]; return `${nextMilestone.score - $store.game.currentScore} points to next rank: ${nextMilestone.name}`"
-    ></p>
+    <template x-if="currentMilestone.name !== 'Master'">
+      <p
+        x-text="const nextMilestone = $store.game.scoreMilestones[Math.min($store.game.scoreMilestones.indexOf(currentMilestone) + 1, $store.game.scoreMilestones.length - 1)]; return `${nextMilestone.score - $store.game.currentScore} points to next rank: ${nextMilestone.name}`"
+      ></p>
+    </template>
+    <template x-if="currentMilestone.name === 'Master'">
+      <p>You found every word! Great job!</p>
+    </template>
     <ol>
       <template
-        x-for="(milestone, index) in $store.game.scoreMilestones.slice(0, -1)"
+        x-for="(milestone, index) in $store.game.scoreMilestones.slice(0, currentMilestone.name === 'Master' ? $store.game.scoreMilestones.length : -1)"
       >
         <li x-bind:class="milestone === currentMilestone ? 'current' : ''">
           <span x-text="milestone.name" class="name"></span>
@@ -49,6 +54,26 @@
         </li>
       </template>
     </ol>
+  </modal>
+  <modal
+    x-init="$watch('currentMilestone', ()=> { if(currentMilestone.name === 'Genius' || currentMilestone.name === 'Master') { $el.showModal(); } })"
+  >
+    <h2 x-text="`${currentMilestone.name}!`"></h2>
+    <template x-if="currentMilestone.name === 'Master'">
+      <p>
+        You found all
+        <strong x-text="`${$store.game.guessedWords.length} words`"></strong>
+        for <strong x-text="`${$store.game.currentScore} points`"></strong>.
+        Great job!
+      </p>
+    </template>
+    <template x-if="currentMilestone.name === 'Genius'">
+      <p>
+        You have reached the highest rank, with
+        <strong x-text="`${$store.game.guessedWords.length} words`"></strong>
+        and <strong x-text="`${$store.game.currentScore} points`"></strong>
+      </p>
+    </template>
   </modal>
 </div>
 <style webc:scoped>

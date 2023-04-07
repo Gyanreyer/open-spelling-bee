@@ -84,7 +84,7 @@
 
   .prev-guess-modal-btn span.enter-start {
     opacity: 0;
-    transform: translateX(20%);
+    transform: translateX(10%);
   }
 
   .prev-guess-modal-btn span.enter-start:only-of-type {
