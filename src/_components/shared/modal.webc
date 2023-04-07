@@ -11,8 +11,6 @@
 </dialog>
 <style webc:scoped>
   :host {
-    z-index: 100;
-    display: block;
     padding: 2rem;
     visibility: hidden;
     opacity: 0;

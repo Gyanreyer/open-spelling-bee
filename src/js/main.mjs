@@ -6,17 +6,21 @@ const seededRandom = (seed) => () => {
   return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
 };
 
-// Uses tsparticles-confetti to fire a fancy confetti effect for celebrations
-const fireConfetti = () => {
-  function randomInRange(min, max) {
-    return Math.random() * (max - min) + min;
-  }
+const randomInRange = (min, max) => Math.random() * (max - min) + min;
 
-  confetti({
-    angle: randomInRange(55, 125),
+// Uses tsparticles-confetti to fire a fancy confetti effect for celebrations
+const fireConfetti = async (canvasId) => {
+  const canvas = document.getElementById(canvasId);
+
+  // you should  only initialize a canvas once, so save this function
+  // we'll save it to the canvas itself for the purpose of this demo
+  canvas.confetti = canvas.confetti || (await confetti.create(canvas));
+
+  canvas.confetti({
+    angle: randomInRange(75, 105),
     spread: randomInRange(50, 70),
-    particleCount: randomInRange(50, 100),
-    origin: { y: 0.5 },
+    particleCount: randomInRange(30, 45),
+    origin: { y: 0.8 },
   });
 };
 
@@ -213,7 +217,7 @@ document.addEventListener("alpine:init", () => {
         this.currentScore += score;
 
         if (isPanagram) {
-          fireConfetti();
+          fireConfetti("panagram-confetti");
 
           this.showNotification({
             class: "valid-guess gradient-bg panagram",
@@ -391,6 +395,17 @@ document.addEventListener("alpine:init", () => {
   Alpine.data("guessedWordPage", () => ({
     init() {
       wordPageIntersectionObserver?.observe(this.$el);
+    },
+  }));
+
+  Alpine.data("winModal", () => ({
+    init() {
+      this.$watch("currentMilestone", (milestone) => {
+        if (milestone.name === "Genius" || milestone.name === "Master") {
+          this.$el.showModal();
+          fireConfetti("win-confetti");
+        }
+      });
     },
   }));
 });

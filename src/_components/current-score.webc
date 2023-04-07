@@ -33,7 +33,7 @@
       </template>
     </div>
   </button>
-  <modal x-ref="scoremodal">
+  <modal x-ref="scoremodal" id="score-modal">
     <h2>Rankings</h2>
     <p>Current score: <span x-text="$store.game.currentScore"></span></p>
     <template x-if="currentMilestone.name !== 'Master'">
@@ -55,9 +55,7 @@
       </template>
     </ol>
   </modal>
-  <modal
-    x-init="$watch('currentMilestone', ()=> { if(currentMilestone.name === 'Genius' || currentMilestone.name === 'Master') { $el.showModal(); } })"
-  >
+  <modal x-data="winModal" id="win-modal">
     <h2 x-text="`${currentMilestone.name}!`"></h2>
     <template x-if="currentMilestone.name === 'Master'">
       <p>
@@ -74,6 +72,7 @@
         and <strong x-text="`${$store.game.currentScore} points`"></strong>
       </p>
     </template>
+    <canvas id="win-confetti" class="confetti"></canvas>
   </modal>
 </div>
 <style webc:scoped>
@@ -173,7 +172,12 @@
     background-color: papayawhip;
   }
 
-  dialog ol {
+  #win-modal {
+    padding-top: 3rem;
+    padding-bottom: 4rem;
+  }
+
+  #win-modal ol {
     list-style: none;
     padding: 0;
     margin: 0;
@@ -181,7 +185,7 @@
     flex-direction: column-reverse;
   }
 
-  dialog li {
+  #win-modal li {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -191,16 +195,25 @@
     opacity: 0.3;
   }
 
-  dialog li.current,
-  dialog li.current ~ li {
+  #win-modal li.current,
+  #win-modal li.current ~ li {
     opacity: 1;
   }
 
-  dialog li.current {
+  #win-modal li.current {
     background-color: var(--yellow);
   }
 
-  dialog li.current .name {
+  #win-modal li.current .name {
     font-weight: bold;
+  }
+
+  #win-confetti {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
   }
 </style>

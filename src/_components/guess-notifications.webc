@@ -1,5 +1,7 @@
 <div webc:root="override" class="guess-notifications">
-  <div id="tsparticles"></div>
+  <div class="confetti-wrapper">
+    <canvas id="panagram-confetti" class="confetti"></canvas>
+  </div>
   <template
     x-for="(notification, index) in $store.game.notifications"
     x-bind:key="notification.id"
@@ -77,5 +79,15 @@
       transform: translate(-50%, calc(var(--base-translate-y) - 25%));
       transition: opacity 0.3s, transform 0.3s;
     }
+  }
+
+  .confetti-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 40%;
+    z-index: 20;
+    pointer-events: none;
   }
 </style>

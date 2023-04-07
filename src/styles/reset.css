@@ -21,3 +21,13 @@ body {
   background-image: var(--gradient);
   color: white;
 }
+
+canvas.confetti {
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  canvas.confetti {
+    display: none;
+  }
+}
