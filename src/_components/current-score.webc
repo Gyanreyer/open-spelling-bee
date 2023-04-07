@@ -177,7 +177,7 @@
     padding-bottom: 4rem;
   }
 
-  #win-modal ol {
+  #score-modal ol {
     list-style: none;
     padding: 0;
     margin: 0;
@@ -185,7 +185,7 @@
     flex-direction: column-reverse;
   }
 
-  #win-modal li {
+  #score-modal li {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -195,16 +195,16 @@
     opacity: 0.3;
   }
 
-  #win-modal li.current,
-  #win-modal li.current ~ li {
+  #score-modal li.current,
+  #score-modal li.current ~ li {
     opacity: 1;
   }
 
-  #win-modal li.current {
+  #score-modal li.current {
     background-color: var(--yellow);
   }
 
-  #win-modal li.current .name {
+  #score-modal li.current .name {
     font-weight: bold;
   }
 
