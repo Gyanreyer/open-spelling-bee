@@ -43,6 +43,8 @@
     height: 0.4rem;
     flex: 1;
     margin-left: 1.5ch;
+    /* Offset right side so the right edge of the last progress dot is aligned with the right edge of the header */
+    margin-right: 0.3rem;
   }
 
   progress {

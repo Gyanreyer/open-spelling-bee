@@ -12,6 +12,7 @@ body {
   line-height: 1.1;
   color: #1a1a1a;
   width: calc(100% - 2rem);
+  margin: 0;
   padding: 1rem;
 }
 

@@ -4,6 +4,7 @@
 </header>
 <style webc:scoped>
   :host {
+    width: 100%;
     max-width: 25rem;
     margin: 0 auto;
   }
