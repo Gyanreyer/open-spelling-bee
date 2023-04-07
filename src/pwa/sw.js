@@ -1,4 +1,4 @@
-const cacheName = "open-spelling-bee-0.10.3";
+const cacheName = "open-spelling-bee-0.10.4";
 const cacheFiles = ["/index.html", "/js/main.mjs"];
 
 self.addEventListener("install", (e) => {
@@ -17,13 +17,13 @@ self.addEventListener("fetch", (e) => {
 
   e.respondWith(
     (async () => {
-      const cachedResponse = await caches.match(e.request);
+      const cache = await caches.open(cacheName);
+      const cachedResponse = await cache.match(e.request);
       console.log(`[Service Worker] Fetching resource: ${e.request.url}`);
       if (cachedResponse) {
         return cachedResponse;
       }
       const response = await fetch(e.request);
-      const cache = await caches.open(cacheName);
       const parsedRequestURL = new URL(e.request.url);
       if (
         parsedRequestURL.hostname === "cdn.jsdelivr.net" ||
