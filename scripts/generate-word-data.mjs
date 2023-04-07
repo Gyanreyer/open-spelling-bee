@@ -160,3 +160,12 @@ const totalTime = performance.now() - startTime;
 console.log("Processed word data in", totalTime, "ms");
 console.log("Final word count:", finalWordList.length);
 console.log("Final letter set count:", finalLetterSetList.length);
+
+if (finalWordList.length < allWords.length) {
+  console.log(
+    `Filtered out ${
+      allWords.length - finalWordList.length
+    } words from the original list.`
+  );
+  await fs.writeFile(wordFilePath, viableWordList.slice().sort().join("\n"));
+}

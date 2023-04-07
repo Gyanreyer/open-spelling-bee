@@ -1,5 +1,5 @@
-const cacheName = "open-spelling-bee-0.10.0";
-const cacheFiles = ["/index.html", "/js/main.mjs", "/words/en.json"];
+const cacheName = "open-spelling-bee-0.10.1";
+const cacheFiles = ["/index.html", "/js/main.mjs"];
 
 self.addEventListener("install", (e) => {
   console.log("[Service Worker] Installed");
@@ -24,8 +24,12 @@ self.addEventListener("fetch", (e) => {
       }
       const response = await fetch(e.request);
       const cache = await caches.open(cacheName);
-      if (new URL(e.request.url).hostname === "cdn.jsdelivr.net") {
-        // Cache CDN responses
+      const parsedRequestURL = new URL(e.request.url);
+      if (
+        parsedRequestURL.hostname === "cdn.jsdelivr.net" ||
+        parsedRequestURL.pathname.startsWith("/words/")
+      ) {
+        // Cache CDN and word set responses
         await cache.add(e.request);
       }
       cache.put(e.request, response.clone());
