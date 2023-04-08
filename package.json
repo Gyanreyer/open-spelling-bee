@@ -19,7 +19,7 @@
   "homepage": "https://github.com/Gyanreyer/open-spelling-bee#readme",
   "devDependencies": {
     "@11ty/eleventy": "^2.0.1",
-    "@11ty/eleventy-plugin-webc": "^0.10.1",
+    "@11ty/eleventy-plugin-webc": "^0.11.0",
     "@types/node": "^18.15.3",
     "esbuild": "^0.17.15",
     "html-minifier-terser": "^7.1.0",

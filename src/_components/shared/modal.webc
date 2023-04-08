@@ -1,4 +1,7 @@
-<dialog webc:root="override">
+<dialog
+  webc:root="override"
+  x-on:click="if($event.target === $el) { $el.close() }"
+>
   <button
     autofocus
     type="button"
@@ -7,11 +10,14 @@
   >
     <close-icon width="24" height="24"></close-icon>
   </button>
-  <slot></slot>
+  <div class="modal-contents">
+    <slot></slot>
+  </div>
 </dialog>
 <style webc:scoped>
   :host {
-    padding: 2rem;
+    display: block;
+    z-index: 100;
     visibility: hidden;
     opacity: 0;
     border-radius: 0.5rem;
@@ -21,6 +27,7 @@
     max-height: calc(100vh - 6rem);
     overflow-y: auto;
     top: 3rem;
+    padding: 0;
     margin: 0 auto;
     transform: translateY(1rem);
     --transition-duration: 0.2s;
@@ -42,7 +49,12 @@
     backdrop-filter: blur(4px);
   }
 
-  :host button[aria-label="close"] {
+  .modal-contents {
+    position: relative;
+    padding: 2rem;
+  }
+
+  button[aria-label="close"] {
     position: absolute;
     top: 0.5rem;
     right: 0.5rem;
@@ -50,5 +62,6 @@
     border: none;
     background: none;
     cursor: pointer;
+    z-index: 1;
   }
 </style>

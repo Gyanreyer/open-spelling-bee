@@ -172,7 +172,7 @@
     background-color: papayawhip;
   }
 
-  #win-modal {
+  #win-modal .modal-contents {
     padding-top: 3rem;
     padding-bottom: 4rem;
   }

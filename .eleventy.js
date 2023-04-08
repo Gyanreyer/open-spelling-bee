@@ -25,7 +25,11 @@ module.exports = (eleventyConfig) => {
           if (jsAssetPathRegex.test(src)) {
             esbuild
               .transform(output, { minify: true })
-              .then((result) => done(null, result.code));
+              .then((result) => done(null, result.code))
+              .catch((e) => {
+                console.error("JS minification error: ", e);
+                done(null, output);
+              });
           } else if (src.endsWith(".json")) {
             done(null, JSON.stringify(JSON.parse(output)));
           } else {
@@ -41,11 +45,16 @@ module.exports = (eleventyConfig) => {
 
   eleventyConfig.addTransform("htmlmin", async function (content) {
     if (this.page.outputPath && this.page.outputPath.endsWith(".html")) {
-      return await minifyHTML(content, {
-        useShortDoctype: true,
-        removeComments: true,
-        collapseWhitespace: true,
-      });
+      try {
+        return await minifyHTML(content, {
+          useShortDoctype: true,
+          removeComments: true,
+          collapseWhitespace: true,
+        });
+      } catch (e) {
+        console.error("HTML minification error: ", e);
+        return content;
+      }
     }
 
     return content;
