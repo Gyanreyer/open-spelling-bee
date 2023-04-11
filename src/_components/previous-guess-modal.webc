@@ -1,0 +1,143 @@
+<template webc:nokeep webc:root="override">
+  <modal x-data="prevGuessModal">
+    <h2
+      x-text="`You have found ${$store.game.guessedWords.length} word${$store.game.guessedWords.length === 1 ? '' : 's'}`"
+    ></h2>
+    <div
+      id="word-page-wrapper"
+      x-bind:style="`--max-row-count: ${maxPageSize/2};`"
+    >
+      <template x-for="(page, index) in guessedWordPages" x-bind:key="page.id">
+        <ul class="word-page" x-bind:data-idx="index">
+          <template x-for="word in page.words" x-bind:key="word">
+            <li x-text="word"></li>
+          </template>
+        </ul>
+      </template>
+    </div>
+    <div class="page-scroll-buttons">
+      <template x-for="(page, index) in guessedWordPages" x-bind:key="page.id">
+        <button x-data="{index}" x-bind="PageScrollButton"></button>
+      </template>
+    </div>
+  </modal>
+</template>
+<script webc:bucket="alpine-init">
+  Alpine.data("prevGuessModal", () => ({
+    maxPageSize: 20,
+    guessedWordPages: [],
+    init() {
+      this.$watch("$store.game.guessedWords", (value) => {
+        const alphabetizedWordList = value.slice().sort();
+
+        const wordCount = alphabetizedWordList.length;
+
+        const mostRecentGuessedWords = new Array(wordCount);
+        const guessedWordPages = [];
+
+        for (let i = 0; i < wordCount; ++i) {
+          const word = alphabetizedWordList[i];
+
+          // Split the guessed words into pages of <=24 words each
+          const lastPage = guessedWordPages[guessedWordPages.length - 1];
+
+          if (!lastPage || lastPage.words.length === this.maxPageSize) {
+            guessedWordPages.push({
+              id: Math.random().toString(36),
+              words: [word],
+            });
+          } else {
+            lastPage.words.push(word);
+          }
+        }
+
+        this.guessedWordPages = guessedWordPages;
+      });
+
+      const wordPageWrapper = document.getElementById("word-page-wrapper");
+
+      const wordPageIntersectionObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            const pageIndex = entry.target.getAttribute("data-idx");
+            const pageButton = document.querySelector(
+              `.page-btn[data-idx="${pageIndex}"]`
+            );
+            if (pageButton) {
+              pageButton.style.setProperty(
+                "--page-scroll-pct",
+                `${entry.intersectionRatio * 100}%`
+              );
+            }
+          });
+        },
+        {
+          root: wordPageWrapper,
+          // The observer will fire every time an element's visibility changes by >=10% to allow us
+          // to have a slightly more fine-grained/smooth animation of the page buttons
+          threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1],
+        }
+      );
+
+      // MutationObserver to detect when a word page is removed from the DOM so we can stop observing it
+      const wordPageMutationObserver = new MutationObserver((mutationList) => {
+        for (const mutation of mutationList) {
+          for (const addedNode of mutation.addedNodes) {
+            wordPageIntersectionObserver.observe(addedNode);
+          }
+          for (const removedNode of mutation.removedNodes) {
+            wordPageIntersectionObserver.unobserve(removedNode);
+          }
+        }
+      });
+      wordPageMutationObserver.observe(wordPageWrapper, {
+        childList: true,
+      });
+
+      for (const wordPageElement of wordPageWrapper.getElementsByClassName(
+        "word-page"
+      )) {
+        wordPageIntersectionObserver.observe(wordPageElement);
+      }
+    },
+  }));
+
+  Alpine.bind("PageScrollButton", () => ({
+    type: "button",
+    class: "page-btn",
+    "@click"() {
+      const wordPageWrapper = document.getElementById("word-page-wrapper");
+      wordPageWrapper.scrollTo({
+        top: 0,
+        left: wordPageWrapper.querySelector(
+          `.word-page[data-idx='${this.$data.index}']`
+        ).offsetLeft,
+        behavior: "smooth",
+      });
+    },
+    ":data-idx": "index",
+    ":aria-label": "`Go to page ${index + 1}`",
+  }));
+</script>
+<style>
+  .word-page {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(var(--max-row-count), 1fr);
+    grid-auto-flow: column;
+    gap: 1rem 2rem;
+    margin: 0;
+    padding: 1.5rem 0 2rem;
+    font-size: 1.2rem;
+    width: 100%;
+    min-width: 100%;
+    list-style: none;
+    scroll-snap-align: center;
+  }
+
+  .word-page li {
+    margin: 0;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid var(--gray);
+  }
+</style>

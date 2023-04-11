@@ -1,21 +1,37 @@
-<div webc:root="override" class="letter-buttons">
+<div webc:root="override">
   <template
-    x-for="(outerLetter, index) in $store.game.outerLetters"
+    x-for="letter in $store.game.outerLetters"
     webc:keep
-    x-bind:key="outerLetter"
+    x-bind:key="letter"
   >
     <button
       class="outer-letter"
-      x-bind="LetterButton"
-      x-model="outerLetter"
+      x-data="letterButton(letter)"
+      x-bind="tmpl"
     ></button>
   </template>
   <button
     class="gradient-bg"
-    x-bind="LetterButton"
-    x-model="$store.game.centerLetter"
+    x-data="letterButton($store.game.centerLetter)"
+    x-effect="letter = $store.game.centerLetter"
+    x-bind="tmpl"
   ></button>
 </div>
+<script webc:bucket="alpine-init">
+  Alpine.data("letterButton", (letter) => ({
+    letter,
+    tmpl: {
+      "x-text": "letter",
+      type: "button",
+      "@click": "guess += letter",
+      // Hiding these buttons from screen readers because they will just be noisy and hard to navigate;
+      // if using the keyboard, the user will be expected to type their guess into the text input
+      // instead of clicking these buttons.
+      tabindex: "-1",
+      "aria-hidden": "true",
+    },
+  }));
+</script>
 <style webc:scoped>
   :host {
     margin: 2rem auto;

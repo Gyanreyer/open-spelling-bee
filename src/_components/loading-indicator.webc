@@ -2,7 +2,7 @@
   <div class="gradient-bg"></div>
   Loading...
 </div>
-<style webc:scoped>
+<style webc:scoped webc:bucket="critical">
   @keyframes loaderFadeIn {
     from {
       opacity: 0;

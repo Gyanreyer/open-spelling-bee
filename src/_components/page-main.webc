@@ -1,4 +1,5 @@
 <main webc:root="override">
   <guess-notifications></guess-notifications>
   <letter-form></letter-form>
+  <win-modal></win-modal>
 </main>

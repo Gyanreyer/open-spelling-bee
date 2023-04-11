@@ -7,25 +7,69 @@ meta:
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <script type="module" src="/js/initServiceWorker.mjs" webc:keep></script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" :content="meta.description" />
     <meta name="generator" :content="eleventy.generator" />
     <title @html="meta.title"></title>
-    <style @raw="getBundle('css')" webc:keep></style>
-    <link rel="stylesheet" href="./styles/reset.css" />
+
     <link rel="manifest" href="/manifest.json" />
+
+    <script @raw="getBundle('js', 'critical')" type="module" webc:keep></script>
+    <script src="./js/initServiceWorker.js" webc:bucket="critical"></script>
+
+    <style @raw="getBundle('css', 'critical')" webc:keep></style>
+    <link rel="stylesheet" href="./styles/reset.css" webc:bucket="critical" />
+
+    <!-- Defer non-critical CSS -->
+    <link
+      rel="preload"
+      :href="getBundleFileUrl('css')"
+      as="style"
+      onload="this.onload=null;this.rel='stylesheet'"
+      webc:keep
+    />
   </head>
   <body x-data>
-    <loading-indicator x-show="false"></loading-indicator>
-    <template x-if="true">
+    <loading-indicator x-show="!$store.game"></loading-indicator>
+    <template x-if="$store.game">
       <div>
         <page-header></page-header>
         <page-main></page-main>
       </div>
     </template>
-    <script src="/js/main.mjs" type="module" async webc:keep></script>
+    <!-- Alpine scripts -->
+    <script
+      :src="getBundleFileUrl('js', 'alpine-init')"
+      type="module"
+      defer
+      webc:keep
+    ></script>
+    <script
+      :src="getBundleFileUrl('js', 'alpine-initialized')"
+      type="module"
+      defer
+      webc:keep
+    ></script>
+
+    <script src="./js/game.mjs" webc:bucket="alpine-init"></script>
+
+    <!-- Non-critical JS -->
+    <script
+      :src="getBundleFileUrl('js')"
+      type="module"
+      defer
+      webc:keep
+    ></script>
+
+    <script src="./js/fireConfetti.js"></script>
+
+    <!-- 3rd party JS -->
+    <script
+      async
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+      webc:keep
+    ></script>
     <script
       src="https://cdn.jsdelivr.net/npm/tsparticles-confetti@2.9.3/tsparticles.confetti.bundle.min.js"
       async
