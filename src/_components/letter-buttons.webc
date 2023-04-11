@@ -4,18 +4,18 @@
     webc:keep
     x-bind:key="letter"
   >
+    <div class="outer letter">
+      <button x-data="letterButton(letter)" x-bind="tmpl"></button>
+    </div>
+  </template>
+  <div class="center letter">
     <button
-      class="outer-letter"
-      x-data="letterButton(letter)"
+      class="gradient-bg"
+      x-data="letterButton($store.game.centerLetter)"
+      x-effect="letter = $store.game.centerLetter"
       x-bind="tmpl"
     ></button>
-  </template>
-  <button
-    class="gradient-bg"
-    x-data="letterButton($store.game.centerLetter)"
-    x-effect="letter = $store.game.centerLetter"
-    x-bind="tmpl"
-  ></button>
+  </div>
 </div>
 <script webc:bucket="alpine-init">
   Alpine.data("letterButton", (letter) => ({
@@ -48,13 +48,20 @@
     --button-max-size: 8rem;
   }
 
+  .letter {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    --translate-x: -50%;
+    --translate-y: -50%;
+    transform: translate(var(--translate-x), var(--translate-y));
+  }
+
   button {
     clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
     font-weight: 600;
     font-size: 1.4rem;
-    position: absolute;
-    top: 50%;
-    left: 50%;
+
     border: none;
     text-transform: uppercase;
 
@@ -62,11 +69,8 @@
     max-width: var(--button-max-size);
     aspect-ratio: 1.15;
 
-    --translate-x: -50%;
-    --translate-y: -50%;
     --scale: 0.925;
-    transform: translate(var(--translate-x), var(--translate-y))
-      scale(var(--scale));
+    transform: scale(var(--scale));
 
     transition-property: transform, opacity;
     transition-duration: 0.2s;
@@ -77,35 +81,35 @@
     opacity: 0.8;
   }
 
-  .outer-letter {
+  .outer.letter button {
     background: var(--gray);
   }
 
-  .outer-letter:nth-of-type(1) {
+  .outer.letter:nth-of-type(1) {
     --translate-y: -150%;
   }
 
-  .outer-letter:nth-of-type(2) {
+  .outer.letter:nth-of-type(2) {
     --translate-x: -125%;
     --translate-y: -100%;
   }
 
-  .outer-letter:nth-of-type(3) {
+  .outer.letter:nth-of-type(3) {
     --translate-x: 25%;
     --translate-y: -100%;
   }
 
-  .outer-letter:nth-of-type(4) {
+  .outer.letter:nth-of-type(4) {
     --translate-x: -125%;
     --translate-y: 0%;
   }
 
-  .outer-letter:nth-of-type(5) {
+  .outer.letter:nth-of-type(5) {
     --translate-x: 25%;
     --translate-y: 0%;
   }
 
-  .outer-letter:nth-of-type(6) {
+  .outer.letter:nth-of-type(6) {
     --translate-y: 50%;
   }
 </style>
