@@ -39,20 +39,8 @@ const openGameDBPromise = import(
 ).then(({ openDB }) =>
   openDB("SpellingBee", 1, {
     upgrade(db) {
-      const dailyGamesStore = db.createObjectStore("dailyGames", {
-        keyPath: "dateTimestamp",
-      });
-      dailyGamesStore.createIndex("centerLetter", "centerLetter", {
-        unique: false,
-      });
-      dailyGamesStore.createIndex("outerLetters", "outerLetters", {
-        unique: false,
-      });
-      dailyGamesStore.createIndex("validWords", "validWords", {
-        unique: false,
-      });
-      dailyGamesStore.createIndex("guessedWords", "guessedWords", {
-        unique: false,
+      db.createObjectStore("dailyGames", {
+        keyPath: "timestamp",
       });
     },
   })
@@ -112,14 +100,9 @@ Alpine.store("game", {
       name: "Master",
     },
   ],
-  async init() {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    this.timestamp = today.getTime();
-
-    let gameDB;
+  async syncWithDB() {
     try {
-      gameDB = await openGameDBPromise;
+      const gameDB = await openGameDBPromise;
       const gameData = await gameDB.get("dailyGames", this.timestamp);
 
       if (gameData) {
@@ -127,40 +110,53 @@ Alpine.store("game", {
         this.outerLetters = gameData.outerLetters;
         this.validWords = gameData.validWords;
         this.guessedWords = gameData.guessedWords;
+
+        await this.hydrateLetterSetData();
+      } else {
+        await this.getNewLetterSet(this.timestamp);
       }
     } catch (e) {
       console.error("Error retrieving existing data for today's game", e);
-    }
-
-    if (
-      !this.centerLetter ||
-      (this.outerLetters?.length ?? 0) === 0 ||
-      (this.validWords?.length ?? 0) === 0
-    ) {
+      // If something goes wrong while attempting to hydrate the data,
+      // something may have been tampered with so we'll just bail out and get a new
+      // letter set.
       await this.getNewLetterSet(this.timestamp);
-    } else {
-      try {
-        await this.hydrateLetterSetData();
-      } catch (e) {
-        // If something goes wrong while attempting to hydrate the data,
-        // something may have been tampered with so we'll just bail out and get a new
-        // letter set.
-        await this.getNewLetterSet(this.timestamp);
-      }
     }
+  },
+  updateDB() {
+    const timestamp = this.timestamp;
+    const centerLetter = this.centerLetter;
+    const outerLetters = this.outerLetters.slice();
+    const validWords = this.validWords.slice();
+    const guessedWords = this.guessedWords.slice();
 
-    if (gameDB) {
-      Alpine.effect(async () => {
-        // Set up an effect to update the IndexedDB store whenever the game data changes.
-        await gameDB.put("dailyGames", {
-          dateTimestamp: this.timestamp,
-          centerLetter: this.centerLetter,
-          outerLetters: Array.from(this.outerLetters),
-          validWords: Array.from(this.validWords),
-          guessedWords: Array.from(this.guessedWords),
-        });
-      });
-    }
+    return openGameDBPromise
+      .then((gameDB) =>
+        gameDB.put("dailyGames", {
+          timestamp,
+          centerLetter,
+          outerLetters,
+          validWords,
+          guessedWords,
+        })
+      )
+      .catch((e) => console.error("Error updating DB", e));
+  },
+  async init() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    this.timestamp = today.getTime();
+
+    await this.syncWithDB();
+
+    window.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") {
+        this.syncWithDB();
+      }
+    });
+
+    // Set up an effect to update the IndexedDB store whenever the game data changes.
+    Alpine.effect(this.updateDB.bind(this));
   },
   validateWord(word) {
     if (word.length < 4) {
