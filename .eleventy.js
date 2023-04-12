@@ -1,10 +1,20 @@
 const pluginWebc = require("@11ty/eleventy-plugin-webc");
 const bundlerPlugin = require("@11ty/eleventy-plugin-bundle");
 
+const { Transform } = require("stream");
+
 // Libs for transforming output
 const esbuild = require("esbuild");
 const { minify: minifyCSS } = require("csso");
 const { minify: minifyHTML } = require("html-minifier-terser");
+
+class TransformStream extends Transform {
+  constructor(transformFunction) {
+    super();
+    this._transform = (chunk, enc, done) =>
+      transformFunction(this, chunk, done);
+  }
+}
 
 module.exports = (eleventyConfig) => {
   // Set up webc plugin to process all webc files
@@ -17,8 +27,33 @@ module.exports = (eleventyConfig) => {
   // Pass through word files and manifest without any processing
   eleventyConfig.addPassthroughCopy({
     "src/words": "words",
-    "src/pwa/manifest.json": "manifest.json",
   });
+
+  eleventyConfig.addPassthroughCopy(
+    {
+      "src/pwa/serviceWorker.js": "sw.js",
+    },
+    {
+      transform: () =>
+        new TransformStream((stream, chunk, done) =>
+          esbuild
+            .transform(chunk.toString(), { minify: true })
+            .then((result) => done(null, result.code))
+        ),
+    }
+  );
+
+  eleventyConfig.addPassthroughCopy(
+    {
+      "src/pwa/manifest.json": "manifest.json",
+    },
+    {
+      transform: () =>
+        new TransformStream((stream, chunk, done) =>
+          done(null, JSON.stringify(JSON.parse(chunk.toString())))
+        ),
+    }
+  );
 
   // Apply custom transforms to bundled JS and CSS
   eleventyConfig.addPlugin(bundlerPlugin, {

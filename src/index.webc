@@ -15,15 +15,12 @@ meta:
 
     <link rel="manifest" href="/manifest.json" />
 
-    <!-- Service worker -->
-    <script
-      @raw="`navigator.serviceWorker.register(${getBundleFileUrl('js', 'sw')});`"
-      webc:keep
-    ></script>
-    <script src="./pwa/serviceWorker.js" webc:bucket="sw"></script>
-
     <!-- Critical JS and CSS -->
     <script @raw="getBundle('js', 'critical')" type="module" webc:keep></script>
+    <script webc:bucket="critical">
+      navigator.serviceWorker.register("/sw.js");
+    </script>
+
     <style @raw="getBundle('css', 'critical')" webc:keep></style>
 
     <link rel="stylesheet" href="./styles/reset.css" webc:bucket="critical" />
