@@ -2,21 +2,13 @@
 
 An open-source Spelling Bee game for the web.
 
-## Languages
-
-### English
-
 The base list of words is taken from the [excellent list of words from https://github.com/en-wl/wordlist](https://github.com/en-wl/wordlist/blob/master/alt12dicts/2of4brif.txt).
 
 There will likely be words you think should be valid which are not included in the list!  Contributions to add missing words are strongly encouraged!
 
-### Español
+## Other languages
 
-⚠️ I do not speak Spanish, so all Spanish translation in this project has just been run through ChatGPT. There will very likely be mistakes, so please point them out so they can be corrected! ⚠️
-
-La lista base de palabras se toma de [https://github.com/xavier-hernandez/spanish-wordlist](https://github.com/xavier-hernandez/spanish-wordlist/blob/main/text/spanish_words.txt).
-
-¡Probablemente haya palabras que creas que deberían ser válidas pero que no están incluidas en la lista! ¡Se anima encarecidamente a contribuir para agregar las palabras faltantes!
+This project currently only includes support for English, but I would love to support other languages in the future!
 
 ## Development
 
