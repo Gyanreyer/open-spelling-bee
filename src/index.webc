@@ -35,8 +35,8 @@ meta:
     />
   </head>
   <body x-data>
-    <loading-indicator x-show="!$store.game"></loading-indicator>
-    <template x-if="$store.game">
+    <loading-indicator x-show="!$store.game?.isInitialized"></loading-indicator>
+    <template x-if="$store.game?.isInitialized">
       <div>
         <page-header></page-header>
         <page-main></page-main>

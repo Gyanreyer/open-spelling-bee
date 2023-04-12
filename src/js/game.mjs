@@ -65,6 +65,7 @@ async function loadWordData() {
 }
 
 Alpine.store("game", {
+  isInitialized: false,
   timestamp: 0,
   centerLetter: "",
   outerLetters: [],
@@ -166,6 +167,8 @@ Alpine.store("game", {
     this.timestamp = today.getTime();
 
     await this.syncWithDB();
+
+    this.isInitialized = true;
 
     window.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "visible") {
