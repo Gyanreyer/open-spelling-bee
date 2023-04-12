@@ -1,8 +1,10 @@
-const cacheName = "open-spelling-bee-1.0.4";
+const cacheName = "open-spelling-bee-1.1.0";
 const cacheFiles = ["/", "/index.html"];
 
 self.addEventListener("install", (e) => {
-  console.log("[Service Worker] Installed");
+  // The promise that skipWaiting() returns can be safely ignored.
+  self.skipWaiting();
+
   e.waitUntil(
     (async () => {
       const cache = await caches.open(cacheName);

@@ -15,10 +15,17 @@ meta:
 
     <link rel="manifest" href="/manifest.json" />
 
-    <script @raw="getBundle('js', 'critical')" type="module" webc:keep></script>
-    <script src="./js/initServiceWorker.js" webc:bucket="critical"></script>
+    <!-- Service worker -->
+    <script
+      @raw="`navigator.serviceWorker.register(${getBundleFileUrl('js', 'sw')});`"
+      webc:keep
+    ></script>
+    <script src="./pwa/serviceWorker.js" webc:bucket="sw"></script>
 
+    <!-- Critical JS and CSS -->
+    <script @raw="getBundle('js', 'critical')" type="module" webc:keep></script>
     <style @raw="getBundle('css', 'critical')" webc:keep></style>
+
     <link rel="stylesheet" href="./styles/reset.css" webc:bucket="critical" />
 
     <!-- Defer non-critical CSS -->
@@ -42,37 +49,30 @@ meta:
     <script
       :src="getBundleFileUrl('js', 'alpine-init')"
       type="module"
-      defer
       webc:keep
     ></script>
     <script
       :src="getBundleFileUrl('js', 'alpine-initialized')"
       type="module"
-      defer
       webc:keep
     ></script>
 
     <script src="./js/game.mjs" webc:bucket="alpine-init"></script>
 
     <!-- Non-critical JS -->
-    <script
-      :src="getBundleFileUrl('js')"
-      type="module"
-      defer
-      webc:keep
-    ></script>
+    <script :src="getBundleFileUrl('js')" type="module" webc:keep></script>
 
     <script src="./js/fireConfetti.js"></script>
 
     <!-- 3rd party JS -->
     <script
-      async
       src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+      defer
       webc:keep
     ></script>
     <script
       src="https://cdn.jsdelivr.net/npm/tsparticles-confetti@2.9.3/tsparticles.confetti.bundle.min.js"
-      async
+      defer
       webc:keep
     ></script>
   </body>

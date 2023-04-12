@@ -14,8 +14,11 @@ module.exports = (eleventyConfig) => {
 
   eleventyConfig.addWatchTarget("src/**/*.{js,mjs,css}");
 
-  // Pass through word files without any processing
-  eleventyConfig.addPassthroughCopy("src/words");
+  // Pass through word files and manifest without any processing
+  eleventyConfig.addPassthroughCopy({
+    "src/words": "words",
+    "src/pwa/manifest.json": "manifest.json",
+  });
 
   // Apply custom transforms to bundled JS and CSS
   eleventyConfig.addPlugin(bundlerPlugin, {
