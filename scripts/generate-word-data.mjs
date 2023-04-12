@@ -145,14 +145,24 @@ await Promise.all(processLetterSetPromises);
 
 pool.terminate();
 
+const uncompressedFileContents = JSON.stringify([
+  finalWordList,
+  finalLetterSetList,
+  finalLetterSetVariantList,
+]);
+
+// We're going to compress the file using brotli
+// to help reduce the size of the file which will
+// end up living in the user's cache
+const zlib = await import("node:zlib");
+const textEncoder = new TextEncoder();
+const compressedFileContents = zlib.brotliCompressSync(
+  textEncoder.encode(uncompressedFileContents)
+);
+
 await fs.writeFile(
-  new URL(`../src/words/${lang}.json`, import.meta.url),
-  JSON.stringify([
-    finalWordList,
-    finalLetterSetList,
-    finalLetterSetVariantList,
-  ]),
-  "utf-8"
+  new URL(`../src/words/${lang}.json.br`, import.meta.url),
+  compressedFileContents
 );
 
 const totalTime = performance.now() - startTime;

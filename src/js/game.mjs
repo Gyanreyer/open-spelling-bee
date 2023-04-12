@@ -288,9 +288,17 @@ Alpine.store("game", {
     );
   },
   async getNewLetterSet(dateTimestamp) {
-    const [allWords, letterSets, letterSetVariants] = await fetch(
-      "/words/en.json"
-    ).then((res) => res.json());
+    const importBrotli = import(
+      "https://cdn.jsdelivr.net/npm/brotli-compress@1.3.3/js.mjs"
+    );
+    const [allWords, letterSets, letterSetVariants] = fetch("/words/en.json.br")
+      .then((res) => res.arrayBuffer())
+      .then(async (compressedData) => {
+        const brotli = await importBrotli;
+        const decompressedData = brotli.decompress(compressedData);
+        const text = new TextDecoder().decode(decompressedData);
+        return JSON.parse(text);
+      });
 
     let getRandomNumber = seededRandom(dateTimestamp);
 
