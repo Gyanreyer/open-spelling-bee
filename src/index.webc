@@ -16,6 +16,9 @@ meta:
 
     <link rel="manifest" href="/manifest.json" />
 
+    <!-- Pre-connect to the jsdelivr cdn since we'll be loading a few 3rd party libraries from there -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+
     <!-- Critical JS and CSS -->
     <script @raw="getBundle('js', 'critical')" type="module" webc:keep></script>
     <script webc:bucket="critical">
@@ -38,6 +41,23 @@ meta:
       onload="this.onload=null;this.rel='stylesheet'"
       webc:keep
     />
+
+    <!-- AlpineJS -->
+    <script
+      :src="getBundleFileUrl('js', 'alpine-init')"
+      type="module"
+      webc:keep
+    ></script>
+    <script
+      :src="getBundleFileUrl('js', 'alpine-initialized')"
+      type="module"
+      webc:keep
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+      defer
+      webc:keep
+    ></script>
   </head>
   <body x-data>
     <loading-indicator x-show="!$store.game?.isInitialized"></loading-indicator>
@@ -65,12 +85,5 @@ meta:
     <script :src="getBundleFileUrl('js')" type="module" webc:keep></script>
 
     <script src="./js/fireConfetti.mjs"></script>
-
-    <!-- 3rd party JS -->
-    <script
-      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
-      defer
-      webc:keep
-    ></script>
   </body>
 </html>
