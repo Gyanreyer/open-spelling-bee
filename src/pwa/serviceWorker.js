@@ -1,5 +1,14 @@
-const cacheName = "open-spelling-bee-1.1.6";
-const cacheFiles = ["/", "/index.html"];
+const cacheName = "open-spelling-bee-1.1.7";
+const cacheFiles = [
+  "/",
+  "/index.html",
+  "/words/en.json.br",
+  // 3rd party libraries
+  "https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js",
+  "https://cdn.jsdelivr.net/npm/idb@7/+esm",
+  "https://cdn.jsdelivr.net/npm/brotli-compress@1.3.3/js.mjs",
+  "https://cdn.jsdelivr.net/npm/tsparticles-confetti@2.9.3/tsparticles.confetti.bundle.min.js/+esm",
+];
 
 self.addEventListener("install", (e) => {
   // The promise that skipWaiting() returns can be safely ignored.

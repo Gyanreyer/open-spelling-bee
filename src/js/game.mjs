@@ -311,7 +311,7 @@ Alpine.store("game", {
       this.updateScore(this.currentScore + score);
 
       if (isPanagram) {
-        fireConfetti("panagram-confetti");
+        window.fireConfetti("panagram-confetti");
 
         this.showNotification({
           class: "valid-guess gradient-bg panagram",

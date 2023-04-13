@@ -64,16 +64,11 @@ meta:
     <!-- Non-critical JS -->
     <script :src="getBundleFileUrl('js')" type="module" webc:keep></script>
 
-    <script src="./js/fireConfetti.js"></script>
+    <script src="./js/fireConfetti.mjs"></script>
 
     <!-- 3rd party JS -->
     <script
       src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
-      defer
-      webc:keep
-    ></script>
-    <script
-      src="https://cdn.jsdelivr.net/npm/tsparticles-confetti@2.9.3/tsparticles.confetti.bundle.min.js"
       defer
       webc:keep
     ></script>
