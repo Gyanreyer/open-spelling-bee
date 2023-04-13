@@ -1,34 +1,33 @@
-<div
-  webc:root="override"
-  x-data="{ currentMilestone: $store.game.scoreMilestones[0] }"
-  x-init="$watch('$store.game.currentScore', (value) => { currentMilestone = $store.game.scoreMilestones.findLast(({score})=> score <= value) })"
->
+<div webc:root="override">
   <button
     type="button"
     x-on:click="$refs.scoremodal.showModal()"
-    class="milestone-display"
+    class="rank-display"
   >
-    <div class="current-milestone-label" x-text="currentMilestone.name"></div>
+    <div
+      class="current-rank-label"
+      x-text="$store.game.currentRank?.name"
+    ></div>
     <div class="progress-bar-wrapper">
       <progress
         aria-label="Current score"
-        x-bind:value="$store.game.currentScore || '0'"
-        x-bind:max="$store.game.scoreMilestones.at(-2).score"
+        x-bind:value="$store.game.currentScore"
+        x-bind:max="$store.game.geniusScoreThreshold"
         x-text="`${$store.game.currentScore} points`"
       ></progress>
       <div
         class="current-score-dot"
         aria-hidden
-        x-bind:style="`--width: ${$store.game.currentScore.toString().length + 1.2}ch; left: ${100 * Math.min(1, $store.game.currentScore / $store.game.scoreMilestones.at(-2).score)}%;`"
+        x-bind:style="`--width: ${$store.game.currentScore.toString().length + 1.2}ch; left: ${100 * Math.min(1, $store.game.currentScore/$store.game.geniusScoreThreshold)}%;`"
       >
         <span x-text="$store.game.currentScore"></span>
       </div>
-      <template x-for="milestone in $store.game.scoreMilestones.slice(1, -1)">
+      <template x-for="rank in $store.game.ranks.slice(1, -1)">
         <div
-          class="milestone-dot"
-          x-bind:class="milestone.score <= $store.game.currentScore ? 'filled' : ''"
+          class="rank-dot"
+          x-bind:class="rank.percent <= $store.game.currentRank?.percent || 0 ? 'filled' : ''"
           aria-hidden
-          x-bind:style="`left: ${100 * Math.min(1, (milestone.percent / 0.7))}%`"
+          x-bind:style="`left: ${100 * Math.min(1, (rank.percent / 0.7))}%`"
         ></div>
       </template>
     </div>
@@ -36,28 +35,29 @@
   <modal x-ref="scoremodal" id="score-modal">
     <h2>Rankings</h2>
     <p>Current score: <span x-text="$store.game.currentScore"></span></p>
-    <template x-if="currentMilestone.name !== 'Master'">
-      <p
-        x-text="const nextMilestone = $store.game.scoreMilestones[Math.min($store.game.scoreMilestones.indexOf(currentMilestone) + 1, $store.game.scoreMilestones.length - 1)]; return `${nextMilestone.score - $store.game.currentScore} points to next rank: ${nextMilestone.name}`"
-      ></p>
+    <template x-if="$store.game.nextRank">
+      <p x-text="$store.game.nextRank.name"></p>
     </template>
-    <template x-if="currentMilestone.name === 'Master'">
+    <template x-if="$store.game.isMaster">
       <p>You found every word! Great job!</p>
     </template>
     <ol>
       <template
-        x-for="(milestone, index) in $store.game.scoreMilestones.slice(0, currentMilestone.name === 'Master' ? $store.game.scoreMilestones.length : -1)"
+        x-for="rank in $store.game.ranks.slice(0, $store.game.isMaster ? $store.game.ranks.length : -1)"
+        x-bind:key="rank.name"
       >
-        <li x-bind:class="milestone === currentMilestone ? 'current' : ''">
-          <span x-text="milestone.name" class="name"></span>
-          <span x-text="`${milestone.score} points`"></span>
+        <li x-bind:class="rank === $store.game.currentRank ? 'current' : ''">
+          <span x-text="rank.name" class="name"></span>
+          <span
+            x-text="`${Math.floor(rank.percent * $store.game.totalPossibleScore)} points`"
+          ></span>
         </li>
       </template>
     </ol>
   </modal>
 </div>
 <style webc:scoped>
-  .milestone-display {
+  .rank-display {
     display: flex;
     align-items: center;
     width: 100%;
@@ -65,7 +65,7 @@
     border: none;
   }
 
-  .current-milestone-label {
+  .current-rank-label {
     font-size: 0.8rem;
     text-align: left;
     width: 10ch;
@@ -134,7 +134,7 @@
     line-height: 1em;
   }
 
-  .milestone-dot {
+  .rank-dot {
     position: absolute;
     top: 50%;
     left: 0;
@@ -147,7 +147,7 @@
     z-index: 1;
   }
 
-  .milestone-dot.filled {
+  .rank-dot.filled {
     width: 0.2rem;
     height: 0.2rem;
     background-color: papayawhip;

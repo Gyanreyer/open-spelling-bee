@@ -1,5 +1,5 @@
 <div webc:root="override">
-  <button x-bind="prevGuessModalBtn">
+  <button x-data="prevGuessModalBtn" x-bind="tmpl">
     <template x-if="$store.game.guessedWords.length === 0">
       <span>No words guessed yet</span>
     </template>
@@ -18,31 +18,33 @@
   <previous-guess-modal></previous-guess-modal>
 </div>
 <script webc:bucket="alpine-init">
-  Alpine.bind("prevGuessModalBtn", () => ({
-    "x-data": "{ mostRecentGuesses: [], isInitialRender: true }",
-    "x-init"() {
+  Alpine.data("prevGuessModalBtn", () => ({
+    isInitialRender: true,
+    get mostRecentGuesses() {
+      return this.$store.game.guessedWords.slice().reverse();
+    },
+    init() {
       this.$nextTick(() => {
         this.$data.isInitialRender = false;
       });
-      this.$watch("$store.game.guessedWords", (value) => {
-        this.$data.mostRecentGuesses = value.slice().reverse();
-      });
     },
-    "@click"() {
-      if (this.$store.game.guessedWords.length) {
-        document.querySelector('[x-data="prevGuessModal"]').showModal();
-      }
+    tmpl: {
+      "@click"() {
+        if (this.$store.game.guessedWords.length) {
+          document.querySelector('[x-data="prevGuessModal"]').showModal();
+        }
+      },
+      ":aria-label"() {
+        return this.$store.game.guessedWords.length > 0
+          ? "Show previous guesses"
+          : null;
+      },
+      ":aria-disabled"() {
+        return this.$store.game.guessedWords.length === 0;
+      },
+      type: "button",
+      class: "prev-guess-modal-btn",
     },
-    ":aria-label"() {
-      return this.$store.game.guessedWords.length > 0
-        ? "Show previous guesses"
-        : null;
-    },
-    ":aria-disabled"() {
-      return this.$store.game.guessedWords.length === 0;
-    },
-    type: "button",
-    class: "prev-guess-modal-btn",
   }));
 </script>
 <style webc:scoped>

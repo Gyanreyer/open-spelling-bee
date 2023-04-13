@@ -1,7 +1,7 @@
 <template webc:nokeep webc:root="override">
-  <modal x-data="winModal">
-    <h2 x-text="`${$store.game.currentMilestone?.name}!`"></h2>
-    <template x-if="$store.game.currentMilestone?.name === 'Master'">
+  <modal id="win-modal" x-data="winModal">
+    <h2 x-text="`${$store.game.currentRank?.name}!`"></h2>
+    <template x-if="$store.game.isMaster">
       <p>
         You found all
         <strong x-text="`${$store.game.guessedWords.length} words`"></strong>
@@ -9,7 +9,7 @@
         Great job!
       </p>
     </template>
-    <template x-if="$store.game.currentMilestone?.name === 'Genius'">
+    <template x-if="$store.game.isGenius">
       <p>
         You have reached the highest rank, with
         <strong x-text="`${$store.game.guessedWords.length} words`"></strong>
@@ -21,20 +21,23 @@
 </template>
 <script webc:bucket="alpine-init">
   Alpine.data("winModal", () => ({
+    showModal() {
+      this.$el.showModal();
+      window.fireConfetti("win-confetti");
+    },
     init() {
-      this.$watch("$store.game.currentMilestone", (milestone) => {
-        if (!milestone) return;
-
-        if (milestone.name === "Genius" || milestone.name === "Master") {
-          this.$el.showModal();
-          fireConfetti("win-confetti");
+      const checkIfWon = () => {
+        if (this.$store.game.isGenius) {
+          this.showModal();
         }
-      });
+      };
+
+      Alpine.effect(checkIfWon.bind(this));
     },
   }));
 </script>
 <style>
-  [x-data="winModal"] .modal-contents {
+  #win-modal .modal-contents {
     padding-top: 3rem;
     padding-bottom: 4rem;
   }

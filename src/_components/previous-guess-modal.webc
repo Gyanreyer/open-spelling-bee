@@ -25,35 +25,33 @@
 <script webc:bucket="alpine-init">
   Alpine.data("prevGuessModal", () => ({
     maxPageSize: 20,
-    guessedWordPages: [],
-    init() {
-      this.$watch("$store.game.guessedWords", (value) => {
-        const alphabetizedWordList = value.slice().sort();
+    get guessedWordPages() {
+      const alphabetizedWordList = this.$store.game.guessedWords.slice().sort();
 
-        const wordCount = alphabetizedWordList.length;
+      const wordCount = alphabetizedWordList.length;
 
-        const mostRecentGuessedWords = new Array(wordCount);
-        const guessedWordPages = [];
+      const mostRecentGuessedWords = new Array(wordCount);
+      const guessedWordPages = [];
 
-        for (let i = 0; i < wordCount; ++i) {
-          const word = alphabetizedWordList[i];
+      for (let i = 0; i < wordCount; ++i) {
+        const word = alphabetizedWordList[i];
 
-          // Split the guessed words into pages of <=24 words each
-          const lastPage = guessedWordPages[guessedWordPages.length - 1];
+        // Split the guessed words into pages of <=24 words each
+        const lastPage = guessedWordPages[guessedWordPages.length - 1];
 
-          if (!lastPage || lastPage.words.length === this.maxPageSize) {
-            guessedWordPages.push({
-              id: Math.random().toString(36),
-              words: [word],
-            });
-          } else {
-            lastPage.words.push(word);
-          }
+        if (!lastPage || lastPage.words.length === this.maxPageSize) {
+          guessedWordPages.push({
+            id: Math.random().toString(36),
+            words: [word],
+          });
+        } else {
+          lastPage.words.push(word);
         }
+      }
 
-        this.guessedWordPages = guessedWordPages;
-      });
-
+      return guessedWordPages;
+    },
+    init() {
       const wordPageWrapper = document.getElementById("word-page-wrapper");
 
       const wordPageIntersectionObserver = new IntersectionObserver(

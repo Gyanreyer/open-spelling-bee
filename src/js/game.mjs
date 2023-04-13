@@ -64,6 +64,8 @@ async function loadWordData() {
   return wordData;
 }
 
+const GENIUS_PERCENT_THRESHOLD = 0.7;
+
 Alpine.store("game", {
   isInitialized: false,
   timestamp: 0,
@@ -73,11 +75,25 @@ Alpine.store("game", {
   guessedWords: [],
   totalPossibleScore: 0,
   currentScore: 0,
-  invalidWordRegex: null,
-  validWordRegex: null,
+  get invalidWordRegex() {
+    const letterSetString = `${this.centerLetter}${this.outerLetters.join("")}`;
+    return new RegExp(`[^${letterSetString}]`, "g");
+  },
+  get validWordRegex() {
+    const letterSetString = `${this.centerLetter}${this.outerLetters.join("")}`;
+    return new RegExp(
+      `^[${letterSetString}]*${this.centerLetter}+[${letterSetString}]*$`
+    );
+  },
   notifications: [],
-  currentMilestone: null,
-  scoreMilestones: [
+  currentRank: null,
+  nextRank: null,
+  isGenius: false,
+  isMaster: false,
+  get geniusScoreThreshold() {
+    return Math.floor(GENIUS_PERCENT_THRESHOLD * this.totalPossibleScore);
+  },
+  ranks: [
     {
       percent: 0,
       name: "Beginner",
@@ -111,7 +127,7 @@ Alpine.store("game", {
       name: "Amazing",
     },
     {
-      percent: 0.7,
+      percent: GENIUS_PERCENT_THRESHOLD,
       name: "Genius",
     },
     {
@@ -128,9 +144,15 @@ Alpine.store("game", {
         this.centerLetter = gameData.centerLetter;
         this.outerLetters = gameData.outerLetters;
         this.validWords = gameData.validWords;
-        this.guessedWords = gameData.guessedWords;
-
-        await this.hydrateLetterSetData();
+        // Sanitize the user's persisted list of guessed words to ensure there aren't duplicate words
+        this.guessedWords = Array.from(new Set(gameData.guessedWords));
+        // Calculate the user's current score based on their initial persisted list of guessed words
+        this.updateScore(
+          this.guessedWords.reduce(
+            (total, word) => total + getWordScore(word).score,
+            0
+          )
+        );
       } else {
         await this.getNewLetterSet(this.timestamp);
       }
@@ -178,6 +200,39 @@ Alpine.store("game", {
 
     // Set up an effect to update the IndexedDB store whenever the game data changes.
     Alpine.effect(this.updateDB.bind(this));
+
+    const updateTotalPossibleScore = () => {
+      const validWords = this.validWords;
+
+      this.totalPossibleScore = validWords.reduce(
+        (total, word) => total + getWordScore(word).score,
+        0
+      );
+    };
+    Alpine.effect(updateTotalPossibleScore.bind(this));
+
+    const updateCurrentRank = () => {
+      const currentScore = this.currentScore;
+      const totalPossibleScore = this.totalPossibleScore;
+      const ranks = this.ranks;
+
+      if (!totalPossibleScore) return;
+
+      const currentRankPercent = currentScore / totalPossibleScore;
+
+      this.isGenius = currentRankPercent >= GENIUS_PERCENT_THRESHOLD;
+      this.isMaster = currentRankPercent >= 1;
+
+      for (let i = ranks.length - 1; i >= 0; --i) {
+        const rank = ranks[i];
+        if (currentRankPercent >= rank.percent || i === 0) {
+          this.currentRank = rank;
+          this.nextRank = ranks[i + 1];
+          break;
+        }
+      }
+    };
+    Alpine.effect(updateCurrentRank.bind(this));
   },
   validateWord(word) {
     if (word.length < 4) {
@@ -237,9 +292,6 @@ Alpine.store("game", {
   },
   updateScore(newScore) {
     this.currentScore = newScore;
-    this.currentMilestone = this.scoreMilestones.findLast(
-      ({ score }) => newScore >= score
-    );
   },
   submitGuess(guessWord) {
     if (!guessWord) return;
@@ -280,34 +332,6 @@ Alpine.store("game", {
   shuffleOuterLetters() {
     this.outerLetters = shuffleArray(this.outerLetters);
   },
-  async hydrateLetterSetData() {
-    this.totalPossibleScore = this.validWords.reduce(
-      (total, word) => total + getWordScore(word).score,
-      0
-    );
-    this.scoreMilestones = this.scoreMilestones.map((milestone) => ({
-      ...milestone,
-      score: Math.floor(this.totalPossibleScore * milestone.percent),
-    }));
-
-    // Sanitize the user's persisted list of guessed words to ensure there aren't duplicate words
-    this.guessedWords = Array.from(new Set(this.guessedWords));
-
-    // Calculate the user's current score based on their initial persisted list of guessed words
-    this.updateScore(
-      this.guessedWords.reduce(
-        (total, word) => total + getWordScore(word).score,
-        0
-      )
-    );
-
-    const letterSetString = `${this.centerLetter}${this.outerLetters.join("")}`;
-
-    this.invalidWordRegex = new RegExp(`[^${letterSetString}]`, "g");
-    this.validWordRegex = new RegExp(
-      `^[${letterSetString}]*${this.centerLetter}+[${letterSetString}]*$`
-    );
-  },
   async getNewLetterSet(dateTimestamp) {
     const [allWords, letterSets, letterSetVariants] = await loadWordData();
     let getRandomNumber = seededRandom(dateTimestamp);
@@ -334,7 +358,5 @@ Alpine.store("game", {
     this.validWords = validWords;
     this.guessedWords = guessedWords;
     this.updateScore(0);
-
-    await this.hydrateLetterSetData();
   },
 });
