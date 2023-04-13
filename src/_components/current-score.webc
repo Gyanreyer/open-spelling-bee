@@ -36,7 +36,9 @@
     <h2>Rankings</h2>
     <p>Current score: <span x-text="$store.game.currentScore"></span></p>
     <template x-if="$store.game.nextRank">
-      <p x-text="$store.game.nextRank.name"></p>
+      <p
+        x-text="`${Math.floor($store.game.nextRank.percent * $store.game.totalPossibleScore) - $store.game.currentScore} points to next rank: ${$store.game.nextRank.name}`"
+      ></p>
     </template>
     <template x-if="$store.game.isMaster">
       <p>You found every word! Great job!</p>
