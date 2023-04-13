@@ -55,6 +55,8 @@ module.exports = (eleventyConfig) => {
     }
   );
 
+  eleventyConfig.addPassthroughCopy({ "src/pwa/**/*.png": "/" });
+
   // Apply custom transforms to bundled JS and CSS
   eleventyConfig.addPlugin(bundlerPlugin, {
     transforms: [

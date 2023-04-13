@@ -2,5 +2,20 @@
   "name": "Open Spelling Bee",
   "description": "An open source spelling bee game for the web",
   "start_url": "/",
-  "display": "fullscreen"
+  "id": "/",
+  "display": "fullscreen",
+  "icons": [
+    {
+      "src": "/icon512x512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    },
+    {
+      "src": "/icon32x32.png",
+      "type": "image/png",
+      "sizes": "32x32"
+    }
+  ],
+  "theme_color": "#fdd000",
+  "background_color": "#ffffff"
 }

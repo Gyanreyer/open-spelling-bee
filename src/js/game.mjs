@@ -34,17 +34,18 @@ function getWordScore(word) {
   };
 }
 
-const openGameDBPromise = import(
-  "https://cdn.jsdelivr.net/npm/idb@7/+esm"
-).then(({ openDB }) =>
-  openDB("SpellingBee", 1, {
+const importIdb = import("https://cdn.jsdelivr.net/npm/idb@7/+esm");
+
+async function openGameDB() {
+  const { openDB } = await importIdb;
+  return openDB("SpellingBee", 1, {
     upgrade(db) {
       db.createObjectStore("dailyGames", {
         keyPath: "timestamp",
       });
     },
-  })
-);
+  });
+}
 
 let wordData;
 async function loadWordData() {
@@ -137,8 +138,9 @@ Alpine.store("game", {
   ],
   async syncWithDB() {
     try {
-      const gameDB = await openGameDBPromise;
+      const gameDB = await openGameDB();
       const gameData = await gameDB.get("dailyGames", this.timestamp);
+      gameDB.close();
 
       if (gameData) {
         this.centerLetter = gameData.centerLetter;
@@ -171,15 +173,17 @@ Alpine.store("game", {
     const validWords = this.validWords.slice();
     const guessedWords = this.guessedWords.slice();
 
-    return openGameDBPromise
+    return openGameDB()
       .then((gameDB) =>
-        gameDB.put("dailyGames", {
-          timestamp,
-          centerLetter,
-          outerLetters,
-          validWords,
-          guessedWords,
-        })
+        gameDB
+          .put("dailyGames", {
+            timestamp,
+            centerLetter,
+            outerLetters,
+            validWords,
+            guessedWords,
+          })
+          .then(() => gameDB.close())
       )
       .catch((e) => console.error("Error updating DB", e));
   },
