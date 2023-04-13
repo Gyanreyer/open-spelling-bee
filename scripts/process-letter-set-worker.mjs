@@ -1,7 +1,10 @@
 import workerpool from "workerpool";
 
-function processLetterSet(letterSetChunk, viableWordList) {
+function processLetterSet(letterSetChunk, wordTrie) {
   const processedLetterSetArrayChunk = [];
+
+  const wordTrieNodes = new Map();
+  const letterSetIndexMap = new Map();
 
   for (
     let i = 0, letterSetCount = letterSetChunk.length;
@@ -9,23 +12,41 @@ function processLetterSet(letterSetChunk, viableWordList) {
     ++i
   ) {
     const letterSetString = letterSetChunk[i];
-    const regex = new RegExp(`^[${letterSetString}]*$`);
 
     const processedLetterSetArray = new Array(8);
     processedLetterSetArray[0] = letterSetString;
 
-    for (let j = 0, wordCount = viableWordList.length; j < wordCount; ++j) {
-      const word = viableWordList[j];
+    letterSetIndexMap.clear();
+    for (let j = 0; j < 7; ++j) {
+      letterSetIndexMap.set(letterSetString[j], j + 1);
+    }
 
-      if (regex.test(word)) {
-        for (let k = 0; k < 7; ++k) {
-          const char = letterSetString[k];
-          if (word.includes(char)) {
-            const charWordListIndex = k + 1;
-            if (!processedLetterSetArray[charWordListIndex]) {
-              processedLetterSetArray[charWordListIndex] = [];
-            }
-            processedLetterSetArray[charWordListIndex].push(word);
+    wordTrieNodes.clear();
+    wordTrieNodes.set(wordTrie, {});
+
+    const wordTrieNodeIterator = wordTrieNodes.entries();
+
+    while (wordTrieNodes.size > 0) {
+      const [wordTrieNode, letterSetIndices] =
+        wordTrieNodeIterator.next().value;
+      wordTrieNodes.delete(wordTrieNode);
+
+      for (const [key, value] of Object.entries(wordTrieNode)) {
+        if (key === "words") {
+          for (const index of Object.keys(letterSetIndices)) {
+            processedLetterSetArray[index] =
+              processedLetterSetArray[index] || [];
+            processedLetterSetArray[index].push(...value);
+          }
+        } else if (letterSetIndexMap.has(key)) {
+          const letterIndex = letterSetIndexMap.get(key);
+          if (letterSetIndices[letterIndex]) {
+            wordTrieNodes.set(value, letterSetIndices);
+          } else {
+            wordTrieNodes.set(value, {
+              ...letterSetIndices,
+              [letterIndex]: true,
+            });
           }
         }
       }

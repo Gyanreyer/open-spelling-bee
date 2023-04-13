@@ -21,9 +21,10 @@ const allWords = fileContents.split(/\s/);
 
 console.log(`Read in ${allWords.length} words from ${wordFilePath}`);
 
+const wordTrie = {};
+
 const letterSets = new Set();
-// Maps words to their unique letter sets
-const viableWords = new Map();
+const viableWords = [];
 
 const startTime = performance.now();
 
@@ -44,24 +45,35 @@ for (
 
   const uniqueCharSet = new Set();
 
-  for (let i = 0, charCount = word.length; i < charCount; ++i) {
+  const charCount = word.length;
+  for (let i = 0; i < charCount; ++i) {
     uniqueCharSet.add(word[i]);
   }
-
   const uniqueCharCount = uniqueCharSet.size;
-
   if (uniqueCharCount > 7) {
     // If the word has more than 7 unique characters, it can't be used in the game
     continue;
   }
 
-  viableWords.set(word, uniqueCharSet);
+  viableWords.push(word);
 
   const isPanagram = uniqueCharCount === 7;
 
   if (isPanagram) {
     letterSets.add(Array.from(uniqueCharSet).sort().join(""));
   }
+
+  const sortedCharSet = Array.from(uniqueCharSet).sort();
+
+  let wordTrieNode = wordTrie;
+  for (const char of sortedCharSet) {
+    if (!wordTrieNode[char]) {
+      wordTrieNode[char] = {};
+    }
+    wordTrieNode = wordTrieNode[char];
+  }
+  wordTrieNode.words = wordTrieNode.words || [];
+  wordTrieNode.words.push(word);
 }
 
 const finalLetterSetList = [];
@@ -78,23 +90,21 @@ const pool = workerpool.pool(
 
 const processLetterSetPromises = [];
 
-const viableWordList = Array.from(viableWords.keys());
-
-fs.writeFile(wordFilePath, viableWordList.join("\n"), "utf-8");
-
 const unprocessedLetterSets = Array.from(letterSets);
 
 // Number of letter sets that we should process at a time
 // per worker (doing one at a time is barely faster than
 // doing them all at once due to the added overhead of
 // spawning a new worker and communicating with it)
-const LETTER_SET_CHUNK_SIZE = 100;
+const LETTER_SET_CHUNK_SIZE = Math.ceil(
+  unprocessedLetterSets.length / pool.maxWorkers
+);
 
 while (unprocessedLetterSets.length > 0) {
   const letterSetChunk = unprocessedLetterSets.splice(0, LETTER_SET_CHUNK_SIZE);
   processLetterSetPromises.push(
     pool
-      .exec("processLetterSet", [letterSetChunk, viableWordList])
+      .exec("processLetterSet", [letterSetChunk, wordTrie])
       .then((processedLetterSetArrayChunk) => {
         for (const processedLetterSetArray of processedLetterSetArrayChunk) {
           const [letterSetString, ...wordLists] = processedLetterSetArray;
@@ -154,6 +164,7 @@ const uncompressedFileContents = JSON.stringify([
 // We're going to compress the file using brotli
 // to help reduce the size of the file which will
 // end up living in the user's cache
+// This is a little slow but worth it
 const zlib = await import("node:zlib");
 const textEncoder = new TextEncoder();
 const compressedFileContents = zlib.brotliCompressSync(
@@ -161,8 +172,8 @@ const compressedFileContents = zlib.brotliCompressSync(
 );
 
 await fs.writeFile(
-  new URL(`../src/words/${lang}.json.br`, import.meta.url),
-  compressedFileContents
+  new URL(`../src/words/${lang}.json`, import.meta.url),
+  uncompressedFileContents
 );
 
 const totalTime = performance.now() - startTime;
@@ -171,11 +182,11 @@ console.log("Processed word data in", totalTime, "ms");
 console.log("Final word count:", finalWordList.length);
 console.log("Final letter set count:", finalLetterSetList.length);
 
-if (finalWordList.length < allWords.length) {
+if (viableWords.length < allWords.length) {
   console.log(
     `Filtered out ${
-      allWords.length - finalWordList.length
+      allWords.length - viableWords.length
     } words from the original list.`
   );
-  await fs.writeFile(wordFilePath, viableWordList.slice().sort().join("\n"));
+  await fs.writeFile(wordFilePath, viableWords.sort().join("\n"));
 }
