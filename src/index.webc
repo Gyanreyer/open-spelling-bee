@@ -60,13 +60,11 @@ meta:
     ></script>
   </head>
   <body x-data>
-    <loading-indicator x-show="!$store.game?.isInitialized"></loading-indicator>
-    <template x-if="$store.game?.isInitialized">
-      <div>
-        <page-header></page-header>
-        <page-main></page-main>
-      </div>
-    </template>
+    <loading-indicator x-show="false"></loading-indicator>
+    <div x-cloak>
+      <page-header></page-header>
+      <page-main></page-main>
+    </div>
     <!-- Alpine scripts -->
     <script
       :src="getBundleFileUrl('js', 'alpine-init')"

@@ -42,3 +42,7 @@ button {
 button[type="submit"] {
   font-weight: normal;
 }
+
+[x-cloak] {
+  display: none;
+}

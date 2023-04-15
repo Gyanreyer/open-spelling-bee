@@ -71,6 +71,7 @@
     font-size: 0.8rem;
     text-align: left;
     width: 10ch;
+    height: 1.1em;
   }
 
   .progress-bar-wrapper {

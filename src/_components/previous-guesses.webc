@@ -1,8 +1,6 @@
 <div webc:root="override">
   <button x-data="prevGuessModalBtn" x-bind="tmpl">
-    <template x-if="$store.game.guessedWords.length === 0">
-      <span>No words guessed yet</span>
-    </template>
+    <span x-show="mostRecentGuesses.length === 0">No words guessed yet</span>
     <template x-for="word in mostRecentGuesses" x-bind:key="word">
       <span
         x-text="word + '&nbsp;'"
