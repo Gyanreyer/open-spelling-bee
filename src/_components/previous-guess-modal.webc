@@ -22,7 +22,7 @@
     </div>
   </modal>
 </template>
-<script webc:bucket="alpine-init">
+<script webc:bucket="alpine">
   Alpine.data("prevGuessModal", () => ({
     maxPageSize: 20,
     get guessedWordPages() {

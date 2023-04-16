@@ -44,20 +44,11 @@ meta:
 
     <!-- AlpineJS -->
     <script
-      :src="getBundleFileUrl('js', 'alpine-init')"
+      :src="getBundleFileUrl('js', 'alpine')"
       type="module"
       webc:keep
     ></script>
-    <script
-      :src="getBundleFileUrl('js', 'alpine-initialized')"
-      type="module"
-      webc:keep
-    ></script>
-    <script
-      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
-      defer
-      webc:keep
-    ></script>
+    <script src="./js/game.mjs" webc:bucket="alpine"></script>
   </head>
   <body x-data>
     <loading-indicator x-show="false"></loading-indicator>
@@ -65,19 +56,6 @@ meta:
       <page-header></page-header>
       <page-main></page-main>
     </div>
-    <!-- Alpine scripts -->
-    <script
-      :src="getBundleFileUrl('js', 'alpine-init')"
-      type="module"
-      webc:keep
-    ></script>
-    <script
-      :src="getBundleFileUrl('js', 'alpine-initialized')"
-      type="module"
-      webc:keep
-    ></script>
-
-    <script src="./js/game.mjs" webc:bucket="alpine-init"></script>
 
     <!-- Non-critical JS -->
     <script :src="getBundleFileUrl('js')" type="module" webc:keep></script>

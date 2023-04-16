@@ -19,7 +19,7 @@
     <canvas id="win-confetti" class="confetti"></canvas>
   </modal>
 </template>
-<script webc:bucket="alpine-init">
+<script webc:bucket="alpine">
   Alpine.data("winModal", () => ({
     showModal() {
       this.$el.showModal();

@@ -15,7 +15,7 @@
   </button>
   <previous-guess-modal></previous-guess-modal>
 </div>
-<script webc:bucket="alpine-init">
+<script webc:bucket="alpine">
   Alpine.data("prevGuessModalBtn", () => ({
     isInitialRender: true,
     get mostRecentGuesses() {

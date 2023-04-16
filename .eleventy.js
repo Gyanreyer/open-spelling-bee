@@ -68,10 +68,14 @@ module.exports = (eleventyConfig) => {
 
               // Wrap AlpineJS code in an Alpine init event listener
               const [bucket] = this.buckets;
-              if (bucket === "alpine-init") {
-                unminifiedCode = `document.addEventListener("alpine:init", () => {${unminifiedCode}})`;
-              } else if (bucket === "alpine-initialized") {
-                unminifiedCode = `document.addEventListener("alpine:initialized", () => {${unminifiedCode}})`;
+              if (bucket === "alpine") {
+                unminifiedCode = `
+                  const importAlpine = import("https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/module.esm.js/+esm"); 
+                  document.addEventListener("alpine:init", () => {${unminifiedCode}});
+                  const a = (await importAlpine).default;
+                  window.Alpine = a;
+                  a.start();
+                `;
               }
 
               // Minify the JS bundle

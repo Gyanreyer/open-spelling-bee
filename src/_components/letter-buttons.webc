@@ -17,7 +17,7 @@
     ></button>
   </div>
 </div>
-<script webc:bucket="alpine-init">
+<script webc:bucket="alpine">
   Alpine.data("letterButton", (letter) => ({
     letter,
     tmpl: {
