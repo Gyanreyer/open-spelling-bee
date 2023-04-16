@@ -1,0 +1,92 @@
+<div webc:root="override" x-show="$store.game.previousGame">
+  <button
+    x-on:click="document.getElementById('prev-game-modal').showModal()"
+    aria-label="See yesterday's words"
+  >
+    Yesterday
+  </button>
+  <template x-if="$store.game.previousGame">
+    <modal id="prev-game-modal">
+      <h2>Yesterday's game</h2>
+      <p>
+        You reached rank
+        <strong
+          x-text="$store.game.previousGame.achievedRankName.toLowerCase()"
+          class="rank"
+        ></strong>
+        with
+        <strong
+          x-text="`${$store.game.previousGame.score} point${$store.game.previousGame.score===1 ?'':'s'}`"
+        ></strong>
+        and
+        <strong
+          x-text="`${$store.game.previousGame.guessedWordCount} word${$store.game.previousGame.guessedWordCount===1 ?'':'s'}`"
+        ></strong
+        >.
+      </p>
+      <p class="letters">
+        <span
+          x-text="$store.game.previousGame.centerLetter"
+          class="center-letter"
+        ></span>
+        <template x-for="letter in $store.game.previousGame.outerLetters">
+          <span x-text="letter"></span>
+        </template>
+      </p>
+      <ul>
+        <template
+          x-for="{word,guessed,isPanagram} in $store.game.previousGame.words"
+        >
+          <li
+            x-text="word"
+            x-bind:class="`${guessed?'guessed':''} ${isPanagram?'panagram':''}`"
+          ></li>
+        </template>
+      </ul>
+    </modal>
+  </template>
+</div>
+<style webc:scoped>
+  button {
+    background: none;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+  .rank,
+  .center-letter {
+    color: var(--yellow);
+  }
+
+  .letters {
+    font-size: 1.2rem;
+    font-weight: bold;
+    display: flex;
+    gap: 0.2rem;
+    text-transform: uppercase;
+  }
+
+  ul {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem 2rem;
+    margin: 0;
+    padding: 0 0 2rem;
+    list-style: none;
+  }
+
+  li {
+    margin: 0;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid var(--gray);
+  }
+
+  li.guessed {
+    text-decoration: line-through;
+  }
+
+  li.panagram {
+    font-weight: bold;
+  }
+</style>

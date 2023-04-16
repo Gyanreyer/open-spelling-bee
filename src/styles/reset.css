@@ -37,6 +37,7 @@ button {
   -webkit-appearance: none;
   color: var(--black);
   touch-action: manipulation;
+  padding: 0;
 }
 
 button[type="submit"] {

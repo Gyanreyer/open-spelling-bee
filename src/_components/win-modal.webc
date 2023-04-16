@@ -26,13 +26,11 @@
       window.fireConfetti("win-confetti");
     },
     init() {
-      const checkIfWon = () => {
-        if (this.$store.game.isGenius) {
+      this.$watch("$store.game.isGenius", (isGenius) => {
+        if (isGenius) {
           this.showModal();
         }
-      };
-
-      Alpine.effect(checkIfWon.bind(this));
+      });
     },
   }));
 </script>

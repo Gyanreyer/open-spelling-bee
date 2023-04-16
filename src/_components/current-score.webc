@@ -7,6 +7,8 @@
     <div
       class="current-rank-label"
       x-text="$store.game.currentRank?.name"
+      x-show="$store.game.currentRank"
+      x-transition.opacity
     ></div>
     <div class="progress-bar-wrapper">
       <progress
@@ -15,11 +17,7 @@
         x-bind:max="$store.game.geniusScoreThreshold"
         x-text="`${$store.game.currentScore} points`"
       ></progress>
-      <div
-        class="current-score-dot"
-        aria-hidden
-        x-bind:style="`--width: ${$store.game.currentScore.toString().length + 1.2}ch; left: ${100 * Math.min(1, $store.game.currentScore/$store.game.geniusScoreThreshold)}%;`"
-      >
+      <div aria-hidden x-data="currentScoreDot">
         <span x-text="$store.game.currentScore"></span>
       </div>
       <template x-for="rank in $store.game.ranks.slice(1, -1)">
@@ -32,6 +30,7 @@
       </template>
     </div>
   </button>
+  <prev-game-modal-button></prev-game-modal-button>
   <modal x-ref="scoremodal" id="score-modal">
     <h2>Rankings</h2>
     <p>Current score: <span x-text="$store.game.currentScore"></span></p>
@@ -58,7 +57,27 @@
     </ol>
   </modal>
 </div>
+<script webc:bucket="alpine">
+  Alpine.data("currentScoreDot", () => ({
+    init() {
+      this.$watch("$store.game.currentScore", (currentScore) => {
+        const geniusScoreThreshold = this.$store.game.geniusScoreThreshold;
+        this.$el.style.left = `${
+          100 * Math.min(1, currentScore / geniusScoreThreshold)
+        }%`;
+        const width = `${currentScore.toString().length + 1.2}ch`;
+        this.$el.style.width = width;
+        this.$el.style.height = width;
+      });
+    },
+  }));
+</script>
 <style webc:scoped>
+  :host {
+    display: flex;
+    gap: 1rem;
+  }
+
   .rank-display {
     display: flex;
     align-items: center;
@@ -112,13 +131,12 @@
     border: none;
   }
 
-  .current-score-dot {
-    --width: 2.2ch;
+  [x-data="currentScoreDot"] {
     position: absolute;
     top: 50%;
     left: 0;
-    width: var(--width);
-    height: var(--width);
+    width: 2.2ch;
+    height: 2.2ch;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -132,7 +150,7 @@
     z-index: 2;
   }
 
-  .current-score-dot span {
+  [x-data="currentScoreDot"] span {
     height: 1em;
     line-height: 1em;
   }

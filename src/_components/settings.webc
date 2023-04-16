@@ -1,9 +1,0 @@
-<div webc:root="override" x-data="{ isSettingsModalOpen: false }">
-  <button type="button">Settings</button>
-  <dialog x-bind:open="isSettingsModalOpen">
-    <h2>Settings</h2>
-    <input type="checkbox" id="changePuzzleDaily" />
-    <button type="button" x-on:click="$store.game.getNewLetterSet()">Get new puzzle</button>
-    <button type="button" x-on:click="isSettingsModalOpen = false">Close</button>
-  </dialog>
-</template>

@@ -15,23 +15,34 @@ function shuffleArray(array) {
   return arrayCopy;
 }
 
-function getWordScore(word) {
-  const uniqueChars = {};
-  let uniqueCharCount = 0;
+// Shared Set used for calculating word scores to avoid
+// re-creating one every time we need to calculate a word score
+const uniqueCharSet = new Set();
 
-  for (let i = 0, len = word.length; i < len; ++i) {
-    const char = word[i];
-    if (!uniqueChars[char]) {
-      uniqueChars[char] = true;
-      ++uniqueCharCount;
-    }
+function getIsWordPanagram(word) {
+  const wordLength = word.length;
+  for (let i = 0; i < wordLength; ++i) {
+    uniqueCharSet.add(word[i]);
   }
 
-  const isPanagram = uniqueCharCount === 7;
-  return {
-    score: (word.length <= 4 ? 1 : word.length) + (isPanagram ? 7 : 0),
-    isPanagram,
-  };
+  const uniqueCharCount = uniqueCharSet.size;
+  uniqueCharSet.clear();
+
+  return uniqueCharCount === 7;
+}
+
+function getWordScore(word) {
+  const wordLength = word.length;
+  // 4-letter words are worth 1 point, but all longer words are worth their length (ie, 5-letter words are worth 5 points)
+  const wordLengthScore = wordLength > 4 ? wordLength : 1;
+
+  if (word.length < 7) {
+    // If the word is less than 7 characters long, it can't be a panagram
+    // so we won't bother to check
+    return wordLengthScore;
+  }
+
+  return wordLengthScore + getIsWordPanagram(word) * 7;
 }
 
 const importIdb = import("https://cdn.jsdelivr.net/npm/idb@7/+esm");
@@ -67,32 +78,25 @@ async function loadWordData() {
 
 const GENIUS_PERCENT_THRESHOLD = 0.7;
 
+const validWordSet = new Set();
+const guessedWordSet = new Set();
+
 Alpine.store("game", {
   timestamp: 0,
   centerLetter: "",
   outerLetters: new Array(6).fill(""),
-  validWords: [],
   guessedWords: [],
+  previousGame: null,
   totalPossibleScore: 0,
   currentScore: 0,
-  get invalidWordRegex() {
-    const letterSetString = `${this.centerLetter}${this.outerLetters.join("")}`;
-    return new RegExp(`[^${letterSetString}]`, "g");
-  },
-  get validWordRegex() {
-    const letterSetString = `${this.centerLetter}${this.outerLetters.join("")}`;
-    return new RegExp(
-      `^[${letterSetString}]*${this.centerLetter}+[${letterSetString}]*$`
-    );
-  },
+  invalidWordRegex: null,
+  validWordRegex: null,
   notifications: [],
   currentRank: null,
   nextRank: null,
   isGenius: false,
   isMaster: false,
-  get geniusScoreThreshold() {
-    return Math.floor(GENIUS_PERCENT_THRESHOLD * this.totalPossibleScore);
-  },
+  geniusScoreThreshold: 0,
   ranks: [
     {
       percent: 0,
@@ -142,18 +146,21 @@ Alpine.store("game", {
       gameDB.close();
 
       if (gameData) {
-        this.centerLetter = gameData.centerLetter;
-        this.outerLetters = gameData.outerLetters;
-        this.validWords = gameData.validWords;
+        this.updateLetterSet(gameData.centerLetter, gameData.outerLetters);
+        this.updateValidWords(gameData.validWords);
         // Sanitize the user's persisted list of guessed words to ensure there aren't duplicate words
-        this.guessedWords = Array.from(new Set(gameData.guessedWords));
+        guessedWordSet.clear();
+        for (const word of gameData.guessedWords) {
+          guessedWordSet.add(word);
+        }
+        this.guessedWords = Array.from(guessedWordSet);
         // Calculate the user's current score based on their initial persisted list of guessed words
-        this.updateScore(
-          this.guessedWords.reduce(
-            (total, word) => total + getWordScore(word).score,
-            0
-          )
-        );
+        let currentScore = 0;
+        for (const word of this.guessedWords) {
+          currentScore += getWordScore(word);
+        }
+        this.updateScore(currentScore);
+        this.updateDB();
       } else {
         await this.getNewLetterSet(this.timestamp);
       }
@@ -166,74 +173,122 @@ Alpine.store("game", {
     }
   },
   updateDB() {
-    const timestamp = this.timestamp;
-    const centerLetter = this.centerLetter;
-    const outerLetters = this.outerLetters.slice();
-    const validWords = this.validWords.slice();
-    const guessedWords = this.guessedWords.slice();
+    queueMicrotask(() => {
+      const timestamp = this.timestamp;
+      const centerLetter = this.centerLetter;
+      const outerLetters = this.outerLetters.slice();
+      const validWords = this.validWords.slice();
+      const guessedWords = this.guessedWords.slice();
 
-    return openGameDB()
-      .then((gameDB) =>
-        gameDB
-          .put("dailyGames", {
-            timestamp,
-            centerLetter,
-            outerLetters,
-            validWords,
-            guessedWords,
-          })
-          .then(() => gameDB.close())
-      )
-      .catch((e) => console.error("Error updating DB", e));
+      openGameDB()
+        .then((gameDB) =>
+          gameDB
+            .put("dailyGames", {
+              timestamp,
+              centerLetter,
+              outerLetters,
+              validWords,
+              guessedWords,
+            })
+            .then(() => gameDB.close())
+        )
+        .catch((e) => console.error("Error updating DB", e));
+    });
+  },
+  updateLetterSet(centerLetter, outerLetters) {
+    this.centerLetter = centerLetter;
+    this.outerLetters = outerLetters;
+
+    const letterSetString = `${this.centerLetter}${this.outerLetters.join("")}`;
+    this.invalidWordRegex = new RegExp(`[^${letterSetString}]`, "g");
+    this.validWordRegex = new RegExp(
+      `^[${letterSetString}]*${this.centerLetter}+[${letterSetString}]*$`
+    );
+  },
+  updateValidWords(newValidWords) {
+    validWordSet.clear();
+    this.validWords = newValidWords;
+    let totalPossibleScore = 0;
+    for (const word of newValidWords) {
+      validWordSet.add(word);
+      totalPossibleScore += getWordScore(word);
+    }
+    this.totalPossibleScore = totalPossibleScore;
+    this.geniusScoreThreshold = Math.floor(
+      GENIUS_PERCENT_THRESHOLD * this.totalPossibleScore
+    );
+  },
+  async getPreviousGame() {
+    const yesterdayTimestamp = this.timestamp - 86400000;
+    const gameDB = await openGameDB();
+    const yesterdayGameData = await gameDB.get(
+      "dailyGames",
+      yesterdayTimestamp
+    );
+    gameDB.close();
+
+    if (yesterdayGameData) {
+      const guessedWordSet = new Set(yesterdayGameData.guessedWords);
+      const guessedWords = Array.from(guessedWordSet);
+
+      let score = 0;
+      let totalPossibleScore = 0;
+
+      const normalWords = [];
+      const panagrams = [];
+
+      for (const word of yesterdayGameData.validWords) {
+        const wordScore = getWordScore(word);
+        const isPanagram = wordScore > word.length;
+        const guessed = guessedWordSet.has(word);
+
+        totalPossibleScore += wordScore;
+        if (guessed) {
+          score += wordScore;
+        }
+        const wordEntry = { word, guessed, isPanagram };
+        if (isPanagram) {
+          panagrams.push(wordEntry);
+        } else {
+          normalWords.push(wordEntry);
+        }
+      }
+
+      const achievedRankPercent = score / totalPossibleScore;
+
+      let achievedRankName = this.ranks[0].name;
+
+      for (let i = this.ranks.length - 1; i >= 0; --i) {
+        const rank = this.ranks[i];
+        if (achievedRankPercent >= rank.percent || i === 0) {
+          achievedRankName = rank.name;
+          break;
+        }
+      }
+
+      this.previousGame = {
+        centerLetter: yesterdayGameData.centerLetter,
+        outerLetters: yesterdayGameData.outerLetters,
+        words: panagrams.concat(normalWords),
+        score,
+        achievedRankName,
+        guessedWordCount: guessedWords.length,
+      };
+    }
   },
   async init() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     this.timestamp = today.getTime();
 
-    await this.syncWithDB();
+    this.syncWithDB();
+    this.getPreviousGame();
 
     window.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "visible") {
         this.syncWithDB();
       }
     });
-
-    // Set up an effect to update the IndexedDB store whenever the game data changes.
-    Alpine.effect(this.updateDB.bind(this));
-
-    const updateTotalPossibleScore = () => {
-      const validWords = this.validWords;
-
-      this.totalPossibleScore = validWords.reduce(
-        (total, word) => total + getWordScore(word).score,
-        0
-      );
-    };
-    Alpine.effect(updateTotalPossibleScore.bind(this));
-
-    const updateCurrentRank = () => {
-      const currentScore = this.currentScore;
-      const totalPossibleScore = this.totalPossibleScore;
-      const ranks = this.ranks;
-
-      if (!totalPossibleScore) return;
-
-      const currentRankPercent = currentScore / totalPossibleScore;
-
-      this.isGenius = currentRankPercent >= GENIUS_PERCENT_THRESHOLD;
-      this.isMaster = currentRankPercent >= 1;
-
-      for (let i = ranks.length - 1; i >= 0; --i) {
-        const rank = ranks[i];
-        if (currentRankPercent >= rank.percent || i === 0) {
-          this.currentRank = rank;
-          this.nextRank = ranks[i + 1];
-          break;
-        }
-      }
-    };
-    Alpine.effect(updateCurrentRank.bind(this));
   },
   validateWord(word) {
     if (word.length < 4) {
@@ -257,23 +312,27 @@ Alpine.store("game", {
       };
     }
 
-    if (!this.validWords.includes(word)) {
+    if (!validWordSet.has(word)) {
       return {
         isValid: false,
         reason: "Not a valid word.",
       };
     }
 
-    if (this.guessedWords.includes(word)) {
+    if (guessedWordSet.has(word)) {
       return {
         isValid: false,
         reason: "You've already guessed that word.",
       };
     }
 
+    const score = getWordScore(word);
+    const isPanagram = score > word.length;
+
     return {
       isValid: true,
-      ...getWordScore(word),
+      score,
+      isPanagram,
     };
   },
   showNotification(notificationConfig) {
@@ -293,6 +352,25 @@ Alpine.store("game", {
   },
   updateScore(newScore) {
     this.currentScore = newScore;
+
+    const totalPossibleScore = this.totalPossibleScore;
+    const ranks = this.ranks;
+
+    if (!totalPossibleScore) return;
+
+    const currentRankPercent = newScore / totalPossibleScore;
+
+    this.isGenius = currentRankPercent >= GENIUS_PERCENT_THRESHOLD;
+    this.isMaster = currentRankPercent >= 1;
+
+    for (let i = ranks.length - 1; i >= 0; --i) {
+      const rank = ranks[i];
+      if (currentRankPercent >= rank.percent || i === 0) {
+        this.currentRank = rank;
+        this.nextRank = ranks[i + 1];
+        break;
+      }
+    }
   },
   submitGuess(guessWord) {
     if (!guessWord) return;
@@ -303,7 +381,9 @@ Alpine.store("game", {
       this.validateWord(sanitizedWord);
 
     if (isValid) {
+      guessedWordSet.add(sanitizedWord);
       this.guessedWords.push(sanitizedWord);
+      this.updateDB();
 
       this.updateScore(this.currentScore + score);
 
@@ -351,13 +431,18 @@ Alpine.store("game", {
       ).split("")
     );
 
-    const validWords = validWordIndices.map((i) => allWords[i]);
-    const guessedWords = [];
+    const validWords = new Array(validWordIndices.length);
+    for (let i = 0; i < validWordIndices.length; ++i) {
+      validWords[i] = allWords[validWordIndices[i]];
+    }
 
-    this.centerLetter = centerLetter;
-    this.outerLetters = outerLetters;
-    this.validWords = validWords;
-    this.guessedWords = guessedWords;
+    this.updateLetterSet(centerLetter, outerLetters);
+    this.updateValidWords(validWords);
+
+    this.guessedWords = [];
+    guessedWordSet.clear();
     this.updateScore(0);
+
+    this.updateDB();
   },
 });

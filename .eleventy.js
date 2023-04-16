@@ -16,6 +16,8 @@ class TransformStream extends Transform {
   }
 }
 
+const IS_PRODUCTION = process.env.NODE_ENV === "prod";
+
 module.exports = (eleventyConfig) => {
   // Set up webc plugin to process all webc files
   eleventyConfig.addPlugin(pluginWebc, {
@@ -79,8 +81,11 @@ module.exports = (eleventyConfig) => {
               }
 
               // Minify the JS bundle
-              return (await esbuild.transform(unminifiedCode, { minify: true }))
-                .code;
+              return (
+                await esbuild.transform(unminifiedCode, {
+                  minify: IS_PRODUCTION,
+                })
+              ).code;
             } catch (e) {
               console.error("Error while minifying JS bundle:", e);
             }

@@ -18,12 +18,14 @@
 <script webc:bucket="alpine">
   Alpine.data("prevGuessModalBtn", () => ({
     isInitialRender: true,
-    get mostRecentGuesses() {
-      return this.$store.game.guessedWords.slice().reverse();
-    },
+    mostRecentGuesses: [],
     init() {
       this.$nextTick(() => {
-        this.$data.isInitialRender = false;
+        this.isInitialRender = false;
+      });
+
+      this.$watch("$store.game.guessedWords", (guessedWords) => {
+        this.mostRecentGuesses = guessedWords.slice().reverse();
       });
     },
     tmpl: {
@@ -52,12 +54,14 @@
     overflow: hidden;
     text-overflow: ellipsis;
     width: 100%;
+    height: 2rem;
     margin: 1rem 0;
     padding: 0.5rem 1rem;
     border-radius: 0.3rem;
     background-color: var(--gray);
     border: none;
     box-shadow: var(--shadow);
+    transition: opacity 0.15s;
   }
 
   .prev-guess-modal-btn[aria-disabled="true"] {

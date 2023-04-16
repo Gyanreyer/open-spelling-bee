@@ -22,7 +22,7 @@ meta:
     <!-- Critical JS and CSS -->
     <script @raw="getBundle('js', 'critical')" type="module" webc:keep></script>
     <script webc:bucket="critical">
-      navigator.serviceWorker.register("/sw.js");
+      // navigator.serviceWorker.register("/sw.js");
       // Ask for persistent storage so it won't be lost when the browser is closed on iOS
       if (navigator.storage && navigator.storage.persist) {
         navigator.storage.persist();
