@@ -58,22 +58,17 @@ async function openGameDB() {
   });
 }
 
-let wordData;
 async function loadWordData() {
-  if (!wordData) {
-    const importBrotli = import(
-      "https://cdn.jsdelivr.net/npm/brotli-compress@1.3.3/js.mjs"
-    );
-    wordData = await fetch("/words/en.json.br")
-      .then((res) => res.arrayBuffer())
-      .then(async (compressedData) => {
-        const brotli = await importBrotli;
-        const decompressedData = brotli.decompress(compressedData);
-        const text = new TextDecoder().decode(decompressedData);
-        return JSON.parse(text);
-      });
+  const supportsCompressionStream = "DecompressionStream" in window;
+
+  if (!supportsCompressionStream) {
+    // If the user's browser doesn't support DecompressionStream, we'll just load the much heftier uncompressed word list
+    return await fetch("/words/en.json").then((res) => res.json());
   }
-  return wordData;
+
+  return await fetch("/words/en.json.gz").then((res) =>
+    new Response(res.body.pipeThrough(new DecompressionStream("gzip"))).json()
+  );
 }
 
 const GENIUS_PERCENT_THRESHOLD = 0.7;
@@ -414,15 +409,16 @@ Alpine.store("game", {
     this.outerLetters = shuffleArray(this.outerLetters);
   },
   async getNewLetterSet(dateTimestamp) {
-    const [allWords, letterSets, letterSetVariants] = await loadWordData();
+    const [allWords, letterSets, letterSetWordIndices] = await loadWordData();
     let getRandomNumber = seededRandom(dateTimestamp);
 
-    const [[letterSetIndex, centerLetterIndex], validWordIndices] =
-      letterSetVariants[
-        Math.floor(getRandomNumber() * letterSetVariants.length)
-      ];
+    const letterSetIndex = Math.floor(getRandomNumber() * letterSets.length);
 
-    const letterSetString = letterSets[letterSetIndex];
+    const letterSetID = letterSets[letterSetIndex];
+
+    const letterSetString = letterSetID.slice(0, -1);
+    const centerLetterIndex = Number(letterSetID.slice(-1));
+
     const centerLetter = letterSetString[centerLetterIndex];
     const outerLetters = shuffleArray(
       (
@@ -430,6 +426,8 @@ Alpine.store("game", {
         letterSetString.slice(centerLetterIndex + 1)
       ).split("")
     );
+
+    const validWordIndices = letterSetWordIndices[letterSetIndex];
 
     const validWords = new Array(validWordIndices.length);
     for (let i = 0; i < validWordIndices.length; ++i) {
