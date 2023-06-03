@@ -15,36 +15,6 @@ function shuffleArray(array) {
   return arrayCopy;
 }
 
-// Shared Set used for calculating word scores to avoid
-// re-creating one every time we need to calculate a word score
-const uniqueCharSet = new Set();
-
-function getIsWordPanagram(word) {
-  const wordLength = word.length;
-  for (let i = 0; i < wordLength; ++i) {
-    uniqueCharSet.add(word[i]);
-  }
-
-  const uniqueCharCount = uniqueCharSet.size;
-  uniqueCharSet.clear();
-
-  return uniqueCharCount === 7;
-}
-
-function getWordScore(word) {
-  const wordLength = word.length;
-  // 4-letter words are worth 1 point, but all longer words are worth their length (ie, 5-letter words are worth 5 points)
-  const wordLengthScore = wordLength > 4 ? wordLength : 1;
-
-  if (word.length < 7) {
-    // If the word is less than 7 characters long, it can't be a panagram
-    // so we won't bother to check
-    return wordLengthScore;
-  }
-
-  return wordLengthScore + getIsWordPanagram(word) * 7;
-}
-
 const importIdb = import("https://cdn.jsdelivr.net/npm/idb@7/+esm");
 
 async function openGameDB() {
@@ -75,6 +45,12 @@ const GENIUS_PERCENT_THRESHOLD = 0.7;
 
 const validWordSet = new Set();
 const guessedWordSet = new Set();
+
+// Shared Set used for calculating word scores to avoid
+// re-creating one every time we need to calculate a word score
+const uniqueCharSet = new Set();
+
+const isWordPanagramCache = {};
 
 Alpine.store("game", {
   timestamp: 0,
@@ -134,6 +110,39 @@ Alpine.store("game", {
       name: "Master",
     },
   ],
+  getIsWordPanagram(word) {
+    if (isWordPanagramCache.hasOwnProperty(word)) {
+      return isWordPanagramCache[word];
+    }
+
+    const wordLength = word.length;
+    if (wordLength < 7) {
+      return false;
+    }
+
+    for (let i = 0; i < wordLength; ++i) {
+      uniqueCharSet.add(word[i]);
+    }
+
+    isWordPanagramCache[word] = uniqueCharSet.size === 7;
+
+    uniqueCharSet.clear();
+
+    return isWordPanagramCache[word];
+  },
+  getWordScore(word) {
+    const wordLength = word.length;
+    // 4-letter words are worth 1 point, but all longer words are worth their length (ie, 5-letter words are worth 5 points)
+    const wordLengthScore = wordLength > 4 ? wordLength : 1;
+
+    if (word.length < 7) {
+      // If the word is less than 7 characters long, it can't be a panagram
+      // so we won't bother to check
+      return wordLengthScore;
+    }
+
+    return wordLengthScore + this.getIsWordPanagram(word) * 7;
+  },
   async syncWithDB() {
     try {
       const gameDB = await openGameDB();
@@ -152,7 +161,7 @@ Alpine.store("game", {
         // Calculate the user's current score based on their initial persisted list of guessed words
         let currentScore = 0;
         for (const word of this.guessedWords) {
-          currentScore += getWordScore(word);
+          currentScore += this.getWordScore(word);
         }
         this.updateScore(currentScore);
         this.updateDB();
@@ -206,7 +215,7 @@ Alpine.store("game", {
     let totalPossibleScore = 0;
     for (const word of newValidWords) {
       validWordSet.add(word);
-      totalPossibleScore += getWordScore(word);
+      totalPossibleScore += this.getWordScore(word);
     }
     this.totalPossibleScore = totalPossibleScore;
     this.geniusScoreThreshold = Math.floor(
@@ -233,7 +242,7 @@ Alpine.store("game", {
       const panagrams = [];
 
       for (const word of yesterdayGameData.validWords) {
-        const wordScore = getWordScore(word);
+        const wordScore = this.getWordScore(word);
         const isPanagram = wordScore > word.length;
         const guessed = guessedWordSet.has(word);
 
@@ -321,7 +330,7 @@ Alpine.store("game", {
       };
     }
 
-    const score = getWordScore(word);
+    const score = this.getWordScore(word);
     const isPanagram = score > word.length;
 
     return {
@@ -353,14 +362,13 @@ Alpine.store("game", {
 
     if (!totalPossibleScore) return;
 
-    const currentRankPercent = newScore / totalPossibleScore;
-
-    this.isGenius = currentRankPercent >= GENIUS_PERCENT_THRESHOLD;
-    this.isMaster = currentRankPercent >= 1;
+    this.isGenius = newScore >= this.geniusScoreThreshold;
+    this.isMaster = newScore === totalPossibleScore;
 
     for (let i = ranks.length - 1; i >= 0; --i) {
       const rank = ranks[i];
-      if (currentRankPercent >= rank.percent || i === 0) {
+      const rankThresholdScore = rank.percent * totalPossibleScore;
+      if (newScore >= rankThresholdScore || i === 0) {
         this.currentRank = rank;
         this.nextRank = ranks[i + 1];
         break;

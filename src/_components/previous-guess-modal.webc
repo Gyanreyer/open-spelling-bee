@@ -9,8 +9,11 @@
     >
       <template x-for="(page, index) in guessedWordPages" x-bind:key="page.id">
         <ul class="word-page" x-bind:data-idx="index">
-          <template x-for="word in page.words" x-bind:key="word">
-            <li x-text="word"></li>
+          <template x-for="(word, wordIndex) in page.words" x-bind:key="word">
+            <li
+              x-text="word"
+              x-bind:data-panagram="wordIndex < panagramCount"
+            ></li>
           </template>
         </ul>
       </template>
@@ -26,27 +29,49 @@
   Alpine.data("prevGuessModal", () => ({
     maxPageSize: 20,
     guessedWordPages: [],
+    panagramCount: 0,
     init() {
-      this.$watch("$store.game.guessedWords", (guessedWords) => {
-        const alphabetizedWordList = guessedWords.slice().sort();
+      this.$watch(
+        "$store.game.guessedWords",
+        /**
+         * @param {string[]} guessedWords
+         */
+        (guessedWords) => {
+          const panagramWordList = [];
+          const normalWordList = [];
 
-        const wordCount = alphabetizedWordList.length;
+          guessedWords.forEach((word) => {
+            if (this.$store.game.getIsWordPanagram(word)) {
+              panagramWordList.push(word);
+            } else {
+              normalWordList.push(word);
+            }
+          });
 
-        const pageCount = Math.ceil(wordCount / this.maxPageSize);
-        const guessedWordPages = new Array(pageCount);
+          panagramWordList.sort();
+          normalWordList.sort();
 
-        for (let i = 0; i < pageCount; ++i) {
-          guessedWordPages[i] = {
-            id: Math.random().toString(36),
-            words: alphabetizedWordList.slice(
-              i * this.maxPageSize,
-              (i + 1) * this.maxPageSize
-            ),
-          };
+          const combinedWordList = panagramWordList.concat(normalWordList);
+
+          const wordCount = combinedWordList.length;
+
+          const pageCount = Math.ceil(wordCount / this.maxPageSize);
+          const guessedWordPages = new Array(pageCount);
+
+          for (let i = 0; i < pageCount; ++i) {
+            guessedWordPages[i] = {
+              id: Math.random().toString(36),
+              words: combinedWordList.slice(
+                i * this.maxPageSize,
+                (i + 1) * this.maxPageSize
+              ),
+            };
+          }
+
+          this.panagramCount = panagramWordList.length;
+          this.guessedWordPages = guessedWordPages;
         }
-
-        this.guessedWordPages = guessedWordPages;
-      });
+      );
 
       const wordPageWrapper = document.getElementById("word-page-wrapper");
 
@@ -133,5 +158,9 @@
     margin: 0;
     padding-bottom: 0.25rem;
     border-bottom: 1px solid var(--gray);
+  }
+
+  .word-page li[data-panagram="true"] {
+    font-weight: bold;
   }
 </style>
