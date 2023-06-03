@@ -7,12 +7,15 @@
       id="word-page-wrapper"
       x-bind:style="`--max-row-count: ${maxPageSize/2};`"
     >
-      <template x-for="(page, index) in guessedWordPages" x-bind:key="page.id">
-        <ul class="word-page" x-bind:data-idx="index">
+      <template
+        x-for="(page, pageIndex) in guessedWordPages"
+        x-bind:key="page.id"
+      >
+        <ul class="word-page" x-bind:data-idx="pageIndex">
           <template x-for="(word, wordIndex) in page.words" x-bind:key="word">
             <li
               x-text="word"
-              x-bind:data-panagram="wordIndex < panagramCount"
+              x-bind:data-panagram="(pageIndex * maxPageSize) + wordIndex < panagramCount"
             ></li>
           </template>
         </ul>
