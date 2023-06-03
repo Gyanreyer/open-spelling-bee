@@ -1,4 +1,4 @@
-const cacheName = "open-spelling-bee-1.2.5";
+const cacheName = "open-spelling-bee-1.2.6";
 const cacheFiles = [
   "/",
   "/index.html",
