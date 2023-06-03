@@ -367,8 +367,10 @@ Alpine.store("game", {
 
     for (let i = ranks.length - 1; i >= 0; --i) {
       const rank = ranks[i];
-      const rankThresholdScore = rank.percent * totalPossibleScore;
-      if (newScore >= rankThresholdScore || i === 0) {
+      if (
+        newScore >= Math.floor(rank.percent * totalPossibleScore) ||
+        i === 0
+      ) {
         this.currentRank = rank;
         this.nextRank = ranks[i + 1];
         break;
