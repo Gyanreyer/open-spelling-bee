@@ -11,7 +11,7 @@ This project currently only includes support for English, but I would love to su
 ## Credits
 
 - [The bee icon used for this project was created by Freepik - Flaticon](https://www.flaticon.com/free-icons/bee)
-- The base list of English words is taken from the [excellent list of words from https://github.com/en-wl/wordlist](https://github.com/en-wl/wordlist/blob/master/alt12dicts/2of4brif.txt).
+- The base list of English words was assembled from [SCOWL](http://wordlist.aspell.net/)'s absolutely incredible English word lists, with some manual custom filtering of my own to sanitize the list for this game's purposes
 
 ## Development
 
