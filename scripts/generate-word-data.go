@@ -121,13 +121,11 @@ func main() {
 		}
 	}
 
-	fullWordList := make([]string, len(uniqueWordIndexMap))
+	fullWordList := getMapKeys(uniqueWordIndexMap)
+	sort.Strings(fullWordList)
 
-	i := 0
-	for word := range uniqueWordIndexMap {
-		fullWordList[i] = word
+	for i, word := range fullWordList {
 		uniqueWordIndexMap[word] = i
-		i++
 	}
 
 	sortedLetterSets := getMapKeys(letterSetWords)
@@ -172,43 +170,48 @@ type LetterSetResult struct {
 	words     [][]string
 }
 
-type QueuedNode struct {
-	parentCharIndices []int
-	node              *TrieNode
+type NodeQueueEntry struct {
+	parentQueueEntry *NodeQueueEntry
+	node             *TrieNode
 }
 
 func processLetterSet(letterSet string, rootTrieNode *TrieNode, c chan LetterSetResult) {
-	nodeQueue := []QueuedNode{{parentCharIndices: make([]int, 0), node: rootTrieNode}}
+	nodesToProcess := []*NodeQueueEntry{{parentQueueEntry: nil, node: rootTrieNode}}
 
 	wordMap := make([]map[string]bool, 7)
 
-	nextNodeIndex := 0
-	nodeCount := len(nodeQueue)
+	processedNodeCount := 0
+	nodeCount := len(nodesToProcess)
 
-	for nextNodeIndex < nodeCount {
-		currentTrieNode := nodeQueue[nextNodeIndex].node
-		parentCharIndices := nodeQueue[nextNodeIndex].parentCharIndices
-		nextNodeIndex++
+	letterSetCharIndexMap := make(map[rune]int)
+	for i, char := range letterSet {
+		letterSetCharIndexMap[char] = i
+	}
 
-		for charIndex := 0; charIndex < 7; charIndex++ {
-			char := rune(letterSet[charIndex])
+	for processedNodeCount < nodeCount {
+		currentQueuedNode := nodesToProcess[processedNodeCount]
+		processedNodeCount++
+
+		currentTrieNode := currentQueuedNode.node
+
+		for _, char := range letterSet {
 			nextTrieNode, ok := currentTrieNode.chars[char]
 			if ok {
-				nextQueuedNode := QueuedNode{
-					parentCharIndices: append(parentCharIndices, charIndex),
-					node:              nextTrieNode,
+				nextQueuedNode := &NodeQueueEntry{
+					parentQueueEntry: currentQueuedNode,
+					node:             nextTrieNode,
 				}
-				nodeQueue = append(nodeQueue, nextQueuedNode)
+				nodesToProcess = append(nodesToProcess, nextQueuedNode)
 				nodeCount++
 			}
 
-			charIndicesToAddWordsTo := parentCharIndices
-
-			if char == currentTrieNode.char {
-				charIndicesToAddWordsTo = append(charIndicesToAddWordsTo, charIndex)
+			if len(currentTrieNode.words) == 0 {
+				continue
 			}
 
-			for _, i := range charIndicesToAddWordsTo {
+			// Add all words from the current node to the word map for the current queued node + all of the characters for its parent queued nodes
+			for qn := currentQueuedNode; qn != nil; qn = qn.parentQueueEntry {
+				i := letterSetCharIndexMap[qn.node.char]
 				for _, word := range currentTrieNode.words {
 					if wordMap[i] == nil {
 						wordMap[i] = make(map[string]bool)
