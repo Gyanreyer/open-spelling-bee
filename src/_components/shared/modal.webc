@@ -65,3 +65,8 @@
     z-index: 1;
   }
 </style>
+<style>
+  html:has(dialog[open]) {
+    overflow: clip;
+  }
+</style>
