@@ -28,6 +28,11 @@ async function openGameDB() {
   });
 }
 
+/**
+ * Loads our en.json word data set
+ *
+ * @returns {Promise<string[], string[], number[]>}
+ */
 async function loadWordData() {
   const supportsCompressionStream = "DecompressionStream" in window;
 
@@ -424,10 +429,18 @@ Alpine.store("game", {
 
     const letterSetIndex = Math.floor(getRandomNumber() * letterSets.length);
 
-    const letterSetID = letterSets[letterSetIndex];
+    const unnormalizedLetterSet = letterSets[letterSetIndex];
 
-    const letterSetString = letterSetID.slice(0, -1);
-    const centerLetterIndex = Number(letterSetID.slice(-1));
+    // The center letter is marked by being capitalized, so find the first capitalized letter in the set
+    // (ie, aBcdefg -> center letter is B)
+    const centerLetterIndex = unnormalizedLetterSet.match(/[A-Z]/)?.index;
+
+    if (centerLetterIndex === undefined) {
+      throw new Error(`Invalid letter set ID "${unnormalizedLetterSet}"`);
+    }
+
+    // Normalize the letter set to all-lowercase
+    const letterSetString = unnormalizedLetterSet.toLowerCase();
 
     const centerLetter = letterSetString[centerLetterIndex];
     const outerLetters = shuffleArray(

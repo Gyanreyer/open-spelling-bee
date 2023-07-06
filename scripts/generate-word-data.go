@@ -7,6 +7,7 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"unicode"
 )
 
 func check(e error) {
@@ -74,7 +75,11 @@ func main() {
 		})
 
 		if len(uniqueCharKeys) == 7 {
-			letterSets[string(uniqueCharKeys)] = true
+			for i := 0; i < 7; i++ {
+				// Add each permutation of the letter set where one of the letters is capitalized to indicate it's the center letter
+				letterSet := string(uniqueCharKeys[:i]) + string(unicode.ToUpper(uniqueCharKeys[i])) + string(uniqueCharKeys[i+1:])
+				letterSets[letterSet] = true
+			}
 		}
 
 		currentTrieNode := trie
@@ -107,16 +112,14 @@ func main() {
 		letterSetResult := <-c
 		letterSet := letterSetResult.letterSet
 
-		for j := 0; j < 7; j++ {
-			words := letterSetResult.words[j]
-			wordCount := len(words)
+		words := letterSetResult.words
+		wordCount := len(words)
 
-			// Only include letter sets with 15-60 words; too few words or too many words aren't as fun
-			if wordCount >= 10 && wordCount <= 60 {
-				letterSetWords[letterSet+fmt.Sprintf("%d", j)] = words
-				for k := 0; k < wordCount; k++ {
-					uniqueWordIndexMap[words[k]] = -1
-				}
+		// Only include letter sets with 25-50 words; too few words or too many words aren't as fun
+		if wordCount >= 25 && wordCount <= 50 {
+			letterSetWords[letterSet] = words
+			for k := 0; k < wordCount; k++ {
+				uniqueWordIndexMap[words[k]] = -1
 			}
 		}
 	}
@@ -167,26 +170,30 @@ func main() {
 
 type LetterSetResult struct {
 	letterSet string
-	words     [][]string
+	words     []string
 }
 
 type NodeQueueEntry struct {
 	parentQueueEntry *NodeQueueEntry
 	node             *TrieNode
+	hasCenterLetter  bool
 }
 
 func processLetterSet(letterSet string, rootTrieNode *TrieNode, c chan LetterSetResult) {
-	nodesToProcess := []*NodeQueueEntry{{parentQueueEntry: nil, node: rootTrieNode}}
+	// Find the index of the uppercase letter in the letter set, which indicates the center letter
+	centerLetterIndex := strings.IndexFunc(letterSet, func(r rune) bool {
+		return unicode.IsUpper(r)
+	})
 
-	wordMap := make([]map[string]bool, 7)
+	normalizedLetterSet := strings.ToLower(letterSet)
+	centerLetter := rune(normalizedLetterSet[centerLetterIndex])
+
+	nodesToProcess := []*NodeQueueEntry{{parentQueueEntry: nil, node: rootTrieNode, hasCenterLetter: false}}
+
+	wordMap := make(map[string]bool)
 
 	processedNodeCount := 0
 	nodeCount := len(nodesToProcess)
-
-	letterSetCharIndexMap := make(map[rune]int)
-	for i, char := range letterSet {
-		letterSetCharIndexMap[char] = i
-	}
 
 	for processedNodeCount < nodeCount {
 		currentQueuedNode := nodesToProcess[processedNodeCount]
@@ -194,41 +201,35 @@ func processLetterSet(letterSet string, rootTrieNode *TrieNode, c chan LetterSet
 
 		currentTrieNode := currentQueuedNode.node
 
-		for _, char := range letterSet {
+		for _, char := range normalizedLetterSet {
+			hasCenterLetter := currentQueuedNode.hasCenterLetter || char == centerLetter
+
 			nextTrieNode, ok := currentTrieNode.chars[char]
 			if ok {
 				nextQueuedNode := &NodeQueueEntry{
 					parentQueueEntry: currentQueuedNode,
 					node:             nextTrieNode,
+					hasCenterLetter:  hasCenterLetter,
 				}
 				nodesToProcess = append(nodesToProcess, nextQueuedNode)
 				nodeCount++
 			}
 
-			if len(currentTrieNode.words) == 0 {
+			if !hasCenterLetter || len(currentTrieNode.words) == 0 {
 				continue
 			}
 
 			// Add all words from the current node to the word map for the current queued node + all of the characters for its parent queued nodes
-			for qn := currentQueuedNode; qn != nil; qn = qn.parentQueueEntry {
-				i := letterSetCharIndexMap[qn.node.char]
+			for qn := currentQueuedNode; qn != nil && qn.hasCenterLetter; qn = qn.parentQueueEntry {
 				for _, word := range currentTrieNode.words {
-					if wordMap[i] == nil {
-						wordMap[i] = make(map[string]bool)
-					}
-
-					wordMap[i][word] = true
+					wordMap[word] = true
 				}
 			}
 		}
 	}
 
-	words := make([][]string, 7)
-
-	for i := 0; i < 7; i++ {
-		words[i] = getMapKeys(wordMap[i])
-		sort.Strings(words[i])
-	}
+	words := getMapKeys(wordMap)
+	sort.Strings(words)
 
 	c <- LetterSetResult{letterSet, words}
 }
