@@ -3,13 +3,13 @@
     <h2 x-text="`${$store.game.currentRank?.name}!`"></h2>
     <template x-if="$store.game.isMaster">
       <p>
-        You found all
+        Congratulations! You found all
         <strong x-text="`${$store.game.guessedWords.length} words`"></strong>
-        for <strong x-text="`${$store.game.currentScore} points`"></strong>.
-        Great job!
+        for <strong x-text="`${$store.game.currentScore} points`"></strong> to
+        achieve the secret <strong>master</strong> rank.
       </p>
     </template>
-    <template x-if="$store.game.isGenius">
+    <template x-if="$store.game.isGenius && !$store.game.isMaster">
       <p>
         You have reached the highest rank, with
         <strong x-text="`${$store.game.guessedWords.length} words`"></strong>
@@ -26,8 +26,9 @@
       window.fireConfetti("win-confetti");
     },
     init() {
-      this.$watch("$store.game.isGenius", (isGenius) => {
-        if (isGenius) {
+      // Open the win modal when the user reaches genius or master rank
+      this.$watch("$store.game.currentRank", () => {
+        if (this.$store.game.isGenius) {
           this.showModal();
         }
       });
