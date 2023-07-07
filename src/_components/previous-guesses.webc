@@ -24,9 +24,14 @@
         this.isInitialRender = false;
       });
 
-      this.$watch("$store.game.guessedWords", (guessedWords) => {
-        this.mostRecentGuesses = guessedWords.slice().reverse();
-      });
+      const onGuessedWordsUpdated = () => {
+        this.mostRecentGuesses = this.$store.game.guessedWords
+          .slice()
+          .reverse();
+      };
+      onGuessedWordsUpdated();
+
+      this.$watch("$store.game.guessedWords", onGuessedWordsUpdated);
     },
     tmpl: {
       "@click"() {

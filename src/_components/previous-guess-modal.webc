@@ -34,47 +34,49 @@
     guessedWordPages: [],
     panagramCount: 0,
     init() {
-      this.$watch(
-        "$store.game.guessedWords",
+      const onGuessedWordsUpdated = () => {
         /**
-         * @param {string[]} guessedWords
+         * @type {string[]}
          */
-        (guessedWords) => {
-          const panagramWordList = [];
-          const normalWordList = [];
+        const guessedWords = this.$store.game.guessedWords;
 
-          guessedWords.forEach((word) => {
-            if (this.$store.game.getIsWordPanagram(word)) {
-              panagramWordList.push(word);
-            } else {
-              normalWordList.push(word);
-            }
-          });
+        const panagramWordList = [];
+        const normalWordList = [];
 
-          panagramWordList.sort();
-          normalWordList.sort();
-
-          const combinedWordList = panagramWordList.concat(normalWordList);
-
-          const wordCount = combinedWordList.length;
-
-          const pageCount = Math.ceil(wordCount / this.maxPageSize);
-          const guessedWordPages = new Array(pageCount);
-
-          for (let i = 0; i < pageCount; ++i) {
-            guessedWordPages[i] = {
-              id: Math.random().toString(36),
-              words: combinedWordList.slice(
-                i * this.maxPageSize,
-                (i + 1) * this.maxPageSize
-              ),
-            };
+        guessedWords.forEach((word) => {
+          if (this.$store.game.getIsWordPanagram(word)) {
+            panagramWordList.push(word);
+          } else {
+            normalWordList.push(word);
           }
+        });
 
-          this.panagramCount = panagramWordList.length;
-          this.guessedWordPages = guessedWordPages;
+        panagramWordList.sort();
+        normalWordList.sort();
+
+        const combinedWordList = panagramWordList.concat(normalWordList);
+
+        const wordCount = combinedWordList.length;
+
+        const pageCount = Math.ceil(wordCount / this.maxPageSize);
+        const guessedWordPages = new Array(pageCount);
+
+        for (let i = 0; i < pageCount; ++i) {
+          guessedWordPages[i] = {
+            id: Math.random().toString(36),
+            words: combinedWordList.slice(
+              i * this.maxPageSize,
+              (i + 1) * this.maxPageSize
+            ),
+          };
         }
-      );
+
+        this.panagramCount = panagramWordList.length;
+        this.guessedWordPages = guessedWordPages;
+      };
+
+      onGuessedWordsUpdated();
+      this.$watch("$store.game.guessedWords", onGuessedWordsUpdated);
 
       const wordPageWrapper = document.getElementById("word-page-wrapper");
 

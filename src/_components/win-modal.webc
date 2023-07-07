@@ -26,12 +26,15 @@
       window.fireConfetti("win-confetti");
     },
     init() {
-      // Open the win modal when the user reaches genius or master rank
-      this.$watch("$store.game.currentRank", () => {
+      const onCurrentRankUpdated = () => {
+        // Open the win modal when the user reaches genius or master rank
         if (this.$store.game.isGenius) {
           this.showModal();
         }
-      });
+      };
+
+      onCurrentRankUpdated();
+      this.$watch("$store.game.currentRank", onCurrentRankUpdated);
     },
   }));
 </script>

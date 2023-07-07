@@ -1,11 +1,10 @@
-const cacheName = "open-spelling-bee-1.3.1";
+const cacheName = "open-spelling-bee-1.3.2";
 const cacheFiles = [
   "/",
   "/index.html",
   "/words/en.json.gz",
   // 3rd party libraries
   "https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/module.esm.js/+esm",
-  "https://cdn.jsdelivr.net/npm/idb@7/+esm",
   "https://cdn.jsdelivr.net/npm/tsparticles-confetti@2.9.3/tsparticles.confetti.bundle.min.js/+esm",
 ];
 

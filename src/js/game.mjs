@@ -15,19 +15,6 @@ function shuffleArray(array) {
   return arrayCopy;
 }
 
-const importIdb = import("https://cdn.jsdelivr.net/npm/idb@7/+esm");
-
-async function openGameDB() {
-  const { openDB } = await importIdb;
-  return openDB("SpellingBee", 1, {
-    upgrade(db) {
-      db.createObjectStore("dailyGames", {
-        keyPath: "timestamp",
-      });
-    },
-  });
-}
-
 /**
  * Loads our en.json word data set
  *
@@ -45,6 +32,8 @@ async function loadWordData() {
     new Response(res.body.pipeThrough(new DecompressionStream("gzip"))).json()
   );
 }
+
+const ONE_DAY_TIMESTAMP_MS = 86400000;
 
 const GENIUS_PERCENT_THRESHOLD = 0.7;
 
@@ -148,11 +137,17 @@ Alpine.store("game", {
 
     return wordLengthScore + this.getIsWordPanagram(word) * 7;
   },
-  async syncWithDB() {
+  getTodayTimestampString() {
+    return this.timestamp.toString();
+  },
+  getYesterdayTimestampString() {
+    return (this.timestamp - ONE_DAY_TIMESTAMP_MS).toString();
+  },
+  async syncWithLocalStorage() {
     try {
-      const gameDB = await openGameDB();
-      const gameData = await gameDB.get("dailyGames", this.timestamp);
-      gameDB.close();
+      const gameData = JSON.parse(
+        localStorage.getItem(this.getTodayTimestampString())
+      );
 
       if (gameData) {
         this.updateLetterSet(gameData.centerLetter, gameData.outerLetters);
@@ -169,7 +164,7 @@ Alpine.store("game", {
           currentScore += this.getWordScore(word);
         }
         this.updateScore(currentScore);
-        this.updateDB();
+        this.updateLocalStorage();
       } else {
         await this.getNewLetterSet(this.timestamp);
       }
@@ -181,28 +176,33 @@ Alpine.store("game", {
       await this.getNewLetterSet(this.timestamp);
     }
   },
-  updateDB() {
+  updateLocalStorage() {
     queueMicrotask(() => {
-      const timestamp = this.timestamp;
-      const centerLetter = this.centerLetter;
-      const outerLetters = this.outerLetters.slice();
-      const validWords = this.validWords.slice();
-      const guessedWords = this.guessedWords.slice();
-
-      openGameDB()
-        .then((gameDB) =>
-          gameDB
-            .put("dailyGames", {
-              timestamp,
-              centerLetter,
-              outerLetters,
-              validWords,
-              guessedWords,
-            })
-            .then(() => gameDB.close())
-        )
-        .catch((e) => console.error("Error updating DB", e));
+      localStorage.setItem(
+        this.getTodayTimestampString(),
+        JSON.stringify({
+          centerLetter: this.centerLetter,
+          outerLetters: this.outerLetters,
+          validWords: this.validWords,
+          guessedWords: this.guessedWords,
+        })
+      );
     });
+  },
+  cleanUpLocalStorage() {
+    const todayTimestampString = this.getTodayTimestampString();
+    const yesterdayTimestampString = this.getYesterdayTimestampString();
+
+    for (let i = localStorage.length; i >= 0; --i) {
+      const key = localStorage.key(i);
+      if (
+        // Remove all entries that aren't for today or yesterday
+        key !== todayTimestampString &&
+        key !== yesterdayTimestampString
+      ) {
+        localStorage.removeItem(key);
+      }
+    }
   },
   updateLetterSet(centerLetter, outerLetters) {
     this.centerLetter = centerLetter;
@@ -228,13 +228,9 @@ Alpine.store("game", {
     );
   },
   async getPreviousGame() {
-    const yesterdayTimestamp = this.timestamp - 86400000;
-    const gameDB = await openGameDB();
-    const yesterdayGameData = await gameDB.get(
-      "dailyGames",
-      yesterdayTimestamp
+    const yesterdayGameData = JSON.parse(
+      localStorage.getItem(this.getYesterdayTimestampString())
     );
-    gameDB.close();
 
     if (yesterdayGameData) {
       const guessedWordSet = new Set(yesterdayGameData.guessedWords);
@@ -290,12 +286,13 @@ Alpine.store("game", {
     today.setHours(0, 0, 0, 0);
     this.timestamp = today.getTime();
 
-    this.syncWithDB();
+    this.syncWithLocalStorage();
     this.getPreviousGame();
+    this.cleanUpLocalStorage();
 
     window.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "visible") {
-        this.syncWithDB();
+        this.syncWithLocalStorage();
       }
     });
   },
@@ -393,7 +390,7 @@ Alpine.store("game", {
     if (isValid) {
       guessedWordSet.add(sanitizedWord);
       this.guessedWords.push(sanitizedWord);
-      this.updateDB();
+      this.updateLocalStorage();
 
       this.updateScore(this.currentScore + score);
 
@@ -464,6 +461,6 @@ Alpine.store("game", {
     guessedWordSet.clear();
     this.updateScore(0);
 
-    this.updateDB();
+    this.updateLocalStorage();
   },
 });

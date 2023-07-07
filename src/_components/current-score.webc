@@ -60,15 +60,25 @@
 <script webc:bucket="alpine">
   Alpine.data("currentScoreDot", () => ({
     init() {
-      this.$watch("$store.game.currentScore", (currentScore) => {
+      const onScoreUpdated = () => {
         const geniusScoreThreshold = this.$store.game.geniusScoreThreshold;
+
+        if (!geniusScoreThreshold) {
+          return;
+        }
+
+        const currentScore = this.$store.game.currentScore;
         this.$el.style.left = `${
           100 * Math.min(1, currentScore / geniusScoreThreshold)
         }%`;
         const width = `${currentScore.toString().length + 1.2}ch`;
         this.$el.style.width = width;
         this.$el.style.height = width;
-      });
+      };
+
+      onScoreUpdated();
+      this.$watch("$store.game.currentScore", onScoreUpdated);
+      this.$watch("$store.game.geniusScoreThreshold", onScoreUpdated);
     },
   }));
 </script>
