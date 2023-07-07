@@ -146,11 +146,11 @@ func main() {
 		}
 	}
 
-	letterSetJsonData := make([]interface{}, 3)
-
-	letterSetJsonData[0] = fullWordList
-	letterSetJsonData[1] = sortedLetterSets
-	letterSetJsonData[2] = letterSetWordIndices
+	letterSetJsonData := []interface{}{
+		fullWordList,
+		sortedLetterSets,
+		letterSetWordIndices,
+	}
 
 	json, err := json.Marshal(letterSetJsonData)
 	check(err)
