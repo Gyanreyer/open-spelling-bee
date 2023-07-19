@@ -10985,8 +10985,6 @@ chieftainships
 chiffon
 chiffonier
 chiffoniers
-chigger
-chiggers
 chignon
 chignons
 chihuahua
@@ -29217,8 +29215,6 @@ googling
 googly
 gooier
 gooiest
-gook
-gooks
 goon
 goons
 goop
@@ -30283,14 +30279,7 @@ gynecologist
 gynecologists
 gynecology
 gynecomastia
-gypped
-gypper
-gyppers
-gypping
-gyps
 gypsies
-gypster
-gypsters
 gypsum
 gypsy
 gyrate
@@ -37170,8 +37159,6 @@ kidskin
 kielbasa
 kielbasas
 kielbasi
-kike
-kikes
 kill
 killdeer
 killdeers
@@ -44177,8 +44164,6 @@ negotiations
 negotiator
 negotiators
 negritude
-negro
-negroid
 neigh
 neighbor
 neighbored
