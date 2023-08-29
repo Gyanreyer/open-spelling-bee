@@ -1587,6 +1587,7 @@ alimented
 alimenting
 aliments
 alimony
+alit
 alive
 aliveness
 aliyah
@@ -4397,6 +4398,7 @@ backings
 backlash
 backlashes
 backless
+backlit
 backlog
 backlogged
 backlogging
@@ -33415,6 +33417,8 @@ imbued
 imbues
 imbuing
 imitable
+imitant
+imitants
 imitate
 imitated
 imitates
@@ -33848,8 +33852,6 @@ impressions
 impressive
 impressively
 impressiveness
-imprimatur
-imprimaturs
 imprint
 imprinted
 imprinter
