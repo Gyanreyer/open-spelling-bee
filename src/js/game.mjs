@@ -176,7 +176,19 @@ Alpine.store("game", {
       await this.getNewLetterSet(this.timestamp);
     }
   },
-  updateLocalStorage() {
+  async updateLocalStorage() {
+    if (!this._hasRequestedPersistence) {
+      this._hasRequestedPersistence = true;
+
+      if (navigator.storage && navigator.storage.persist) {
+        const isPersisted = await navigator.storage.persisted();
+        if (!isPersisted) {
+          // Ask for persistent storage so it won't be lost when the browser is closed
+          await navigator.storage.persist();
+        }
+      }
+    }
+
     queueMicrotask(() => {
       localStorage.setItem(
         this.getTodayTimestampString(),
