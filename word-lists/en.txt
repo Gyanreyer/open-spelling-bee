@@ -22305,6 +22305,8 @@ empirically
 empiricism
 empiricist
 empiricists
+emplace
+emplaces
 emplacement
 emplacements
 employ
@@ -22906,6 +22908,8 @@ entreating
 entreatingly
 entreats
 entreaty
+entree
+entrees
 entrench
 entrenched
 entrenches
@@ -25196,6 +25200,8 @@ feminize
 feminized
 feminizes
 feminizing
+femme
+femmes
 femoral
 femur
 femurs
@@ -27844,8 +27850,6 @@ gable
 gabled
 gables
 gabs
-gadabout
-gadabouts
 gadded
 gadder
 gadders
@@ -31464,7 +31468,6 @@ hemmed
 hemmer
 hemmers
 hemming
-hemocyte
 hemodialyses
 hemodialysis
 hemoglobin
@@ -41271,6 +41274,8 @@ mentalists
 mentalities
 mentality
 mentally
+mentee
+mentees
 menthol
 mentholated
 mention
@@ -61950,6 +61955,8 @@ sights
 sightseeing
 sightseer
 sightseers
+sigil
+sigils
 sigma
 sigmas
 sign
@@ -63386,6 +63393,7 @@ snub
 snubbed
 snubbing
 snubs
+snuck
 snuff
 snuffbox
 snuffboxes
@@ -68455,6 +68463,8 @@ teat
 teatime
 teatimes
 teats
+tech
+techs
 techie
 techies
 technetium
