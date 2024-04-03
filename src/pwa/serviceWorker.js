@@ -1,41 +1,40 @@
 const cacheName = "open-spelling-bee-1.4.0";
-const cacheFiles = [
-  "/",
-  "/index.html",
-  // 3rd party libraries
-  "https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/module.esm.js/+esm",
-  "https://cdn.jsdelivr.net/npm/tsparticles-confetti@2.9.3/tsparticles.confetti.bundle.min.js/+esm",
-];
 
 self.addEventListener("install", (e) => {
   // The promise that skipWaiting() returns can be safely ignored.
   self.skipWaiting();
 
   e.waitUntil(
-    (async () => {
-      const cache = await caches.open(cacheName);
-      await cache.addAll(cacheFiles);
-    })()
+    caches.open(cacheName).then((cache) =>
+      cache.addAll([
+        "/",
+        "/index.html",
+        // 3rd party libraries
+        "https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/module.esm.js/+esm",
+        "https://cdn.jsdelivr.net/npm/@tsparticles/confetti@3.0.3/tsparticles.confetti.bundle.min.js/+esm",
+      ])
+    )
   );
 });
 
 self.addEventListener("activate", (e) => {
   // Clean up cached requests from previous versions
   e.waitUntil(
-    caches.keys().then((keyList) => {
-      return Promise.all(
-        keyList.map((key) => {
-          if (key !== cacheName) {
-            return caches.delete(key);
-          }
-        })
-      );
-    })
+    Promise.all([
+      // Claim all clients immediately, so the service worker can control
+      // initial requests
+      self.clients.claim(),
+      caches.keys().then((keyList) => {
+        return Promise.all(
+          keyList.map((key) => {
+            if (key !== cacheName) {
+              return caches.delete(key);
+            }
+          })
+        );
+      }),
+    ])
   );
-
-  // Claim all clients immediately, so the service worker can control
-  // initial requests
-  e.waitUntil(self.clients.claim());
 });
 
 self.addEventListener("fetch", (e) => {
@@ -52,16 +51,17 @@ self.addEventListener("fetch", (e) => {
 
   // Auto-cache all other requests
   e.respondWith(
-    (async () => {
-      const cache = await caches.open(cacheName);
-      const cachedResponse = await cache.match(e.request);
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      const response = await fetch(e.request);
-      cache.put(e.request, response.clone());
-      return response;
-    })()
+    caches.open(cacheName).then((cache) =>
+      cache.match(e.request).then((cachedResponse) => {
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+        return fetch(e.request).then((response) => {
+          cache.put(e.request, response.clone());
+          return response;
+        });
+      })
+    )
   );
 });
 

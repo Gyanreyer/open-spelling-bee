@@ -7,7 +7,7 @@ window.fireConfetti = async (canvasId) => {
   try {
     if (!confettiPromise) {
       confettiPromise = import(
-        "https://cdn.jsdelivr.net/npm/tsparticles-confetti@2.9.3/tsparticles.confetti.bundle.min.js/+esm"
+        "https://cdn.jsdelivr.net/npm/@tsparticles/confetti@3.0.3/tsparticles.confetti.bundle.min.js/+esm"
       );
     }
     const confettiModule = await confettiPromise;

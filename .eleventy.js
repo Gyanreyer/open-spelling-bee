@@ -71,8 +71,8 @@ module.exports = (eleventyConfig) => {
               // Wrap AlpineJS code in an Alpine init event listener
               const [bucket] = this.buckets;
               if (bucket === "alpine") {
-                unminifiedCode = `
-                  const importAlpine = import("https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/module.esm.js/+esm"); 
+                unminifiedCode = /* js */ `
+                  const importAlpine = import("https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/module.esm.js/+esm");
                   document.addEventListener("alpine:init", () => {${unminifiedCode}});
                   const a = (await importAlpine).default;
                   window.Alpine = a;
