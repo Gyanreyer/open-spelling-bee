@@ -1,56 +1,29 @@
-// mulberry32 seeded PRNG
-const seededRandom = (seed) => () => {
-  var t = (seed += 0x6d2b79f5);
-  t = Math.imul(t ^ (t >>> 15), t | 1);
-  t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-};
-
-function shuffleArray(array) {
-  const arrayCopy = array.slice();
-  for (let i = arrayCopy.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arrayCopy[i], arrayCopy[j]] = [arrayCopy[j], arrayCopy[i]];
-  }
-  return arrayCopy;
-}
-
-/**
- * Loads our en.json word data set
- *
- * @returns {Promise<string[], string[], number[]>}
- */
-async function loadWordData() {
-  const supportsCompressionStream = "DecompressionStream" in window;
-
-  if (!supportsCompressionStream) {
-    // If the user's browser doesn't support DecompressionStream, we'll just load the much heftier uncompressed word list
-    return await fetch("/words/en.json").then((res) => res.json());
-  }
-
-  return await fetch("/words/en.json.gz").then((res) =>
-    new Response(res.body.pipeThrough(new DecompressionStream("gzip"))).json()
-  );
-}
-
-const ONE_DAY_TIMESTAMP_MS = 86400000;
-
 const GENIUS_PERCENT_THRESHOLD = 0.7;
 
-const validWordSet = new Set();
-const guessedWordSet = new Set();
-
-// Shared Set used for calculating word scores to avoid
-// re-creating one every time we need to calculate a word score
-const uniqueCharSet = new Set();
-
-const isWordPanagramCache = {};
+/**
+ * @param {number} timestamp
+ * @returns {string}
+ */
+const getLocalStorageKey = (timestamp) => `${timestamp.toString()}-v2`;
 
 Alpine.store("game", {
   timestamp: 0,
   centerLetter: "",
   outerLetters: new Array(6).fill(""),
+  validWordSet: new Set(),
+  // Shared Set used for calculating word scores to avoid
+  // re-creating one every time we need to calculate a word score
+  uniqueCharSet: new Set(),
+  guessedWordSet: new Set(),
   guessedWords: [],
+  clearGuessedWords() {
+    this.guessedWordSet.clear();
+    this.guessedWords = [];
+  },
+  addGuessedWord(word) {
+    this.guessedWordSet.add(word);
+    this.guessedWords.push(word);
+  },
   previousGame: null,
   totalPossibleScore: 0,
   currentScore: 0,
@@ -104,9 +77,10 @@ Alpine.store("game", {
       name: "Master",
     },
   ],
+  isWordPanagramCache: {},
   getIsWordPanagram(word) {
-    if (isWordPanagramCache.hasOwnProperty(word)) {
-      return isWordPanagramCache[word];
+    if (this.isWordPanagramCache.hasOwnProperty(word)) {
+      return this.isWordPanagramCache[word];
     }
 
     const wordLength = word.length;
@@ -114,15 +88,15 @@ Alpine.store("game", {
       return false;
     }
 
+    this.uniqueCharSet.clear();
+
     for (let i = 0; i < wordLength; ++i) {
-      uniqueCharSet.add(word[i]);
+      this.uniqueCharSet.add(word[i]);
     }
 
-    isWordPanagramCache[word] = uniqueCharSet.size === 7;
+    this.isWordPanagramCache[word] = this.uniqueCharSet.size === 7;
 
-    uniqueCharSet.clear();
-
-    return isWordPanagramCache[word];
+    return this.isWordPanagramCache[word];
   },
   getWordScore(word) {
     const wordLength = word.length;
@@ -137,36 +111,32 @@ Alpine.store("game", {
 
     return wordLengthScore + this.getIsWordPanagram(word) * 7;
   },
-  getTodayTimestampString() {
-    return this.timestamp.toString();
-  },
-  getYesterdayTimestampString() {
-    return (this.timestamp - ONE_DAY_TIMESTAMP_MS).toString();
-  },
   async syncWithLocalStorage() {
     try {
-      const gameData = JSON.parse(
-        localStorage.getItem(this.getTodayTimestampString())
+      const guessedWordsString = localStorage.getItem(
+        getLocalStorageKey(this.timestamp)
       );
 
-      if (gameData) {
-        this.updateLetterSet(gameData.centerLetter, gameData.outerLetters);
-        this.updateValidWords(gameData.validWords);
+      if (guessedWordsString) {
+        /**
+         * @type {string[]}
+         */
+        const guessedWords = guessedWordsString
+          ? JSON.parse(guessedWordsString)
+          : [];
+
         // Sanitize the user's persisted list of guessed words to ensure there aren't duplicate words
-        guessedWordSet.clear();
-        for (const word of gameData.guessedWords) {
-          guessedWordSet.add(word);
-        }
-        this.guessedWords = Array.from(guessedWordSet);
-        // Calculate the user's current score based on their initial persisted list of guessed words
+        this.clearGuessedWords();
         let currentScore = 0;
-        for (const word of this.guessedWords) {
+        for (const word of guessedWords) {
+          this.addGuessedWord(word);
+          // Calculate the user's current score based on their initial persisted list of guessed words
           currentScore += this.getWordScore(word);
         }
         this.updateScore(currentScore);
         this.updateLocalStorage();
       } else {
-        await this.getNewLetterSet(this.timestamp);
+        await this.getNewLetterSet();
       }
     } catch (e) {
       console.error("Error retrieving existing data for today's game", e);
@@ -191,26 +161,23 @@ Alpine.store("game", {
 
     queueMicrotask(() => {
       localStorage.setItem(
-        this.getTodayTimestampString(),
-        JSON.stringify({
-          centerLetter: this.centerLetter,
-          outerLetters: this.outerLetters,
-          validWords: this.validWords,
-          guessedWords: this.guessedWords,
-        })
+        getLocalStorageKey(this.timestamp),
+        JSON.stringify(this.guessedWords)
       );
     });
   },
   cleanUpLocalStorage() {
-    const todayTimestampString = this.getTodayTimestampString();
-    const yesterdayTimestampString = this.getYesterdayTimestampString();
+    const todayLocalStorageKey = getLocalStorageKey(this.timestamp);
+    const yesterdayLocalStorageKey = this.previousGame
+      ? getLocalStorageKey(this.previousGame.timestamp)
+      : null;
 
     for (let i = localStorage.length; i >= 0; --i) {
       const key = localStorage.key(i);
       if (
         // Remove all entries that aren't for today or yesterday
-        key !== todayTimestampString &&
-        key !== yesterdayTimestampString
+        key !== todayLocalStorageKey &&
+        key !== yesterdayLocalStorageKey
       ) {
         localStorage.removeItem(key);
       }
@@ -227,11 +194,10 @@ Alpine.store("game", {
     );
   },
   updateValidWords(newValidWords) {
-    validWordSet.clear();
-    this.validWords = newValidWords;
+    this.validWordSet.clear();
     let totalPossibleScore = 0;
     for (const word of newValidWords) {
-      validWordSet.add(word);
+      this.validWordSet.add(word);
       totalPossibleScore += this.getWordScore(word);
     }
     this.totalPossibleScore = totalPossibleScore;
@@ -240,63 +206,87 @@ Alpine.store("game", {
     );
   },
   async getPreviousGame() {
-    const yesterdayGameData = JSON.parse(
-      localStorage.getItem(this.getYesterdayTimestampString())
+    /**
+     * @type {{
+     *  ts: number,
+     *  centerLetter: string,
+     *  outerLetters: string[],
+     *  validWords: string[]
+     * }}
+     */
+    const { ts, centerLetter, outerLetters, validWords } = await fetch(
+      "/words/en?d=yesterday"
+    ).then((res) => res.json());
+
+    const yesterdayGuessedWordsString = localStorage.getItem(
+      getLocalStorageKey(ts)
     );
 
-    if (yesterdayGameData) {
-      const guessedWordSet = new Set(yesterdayGameData.guessedWords);
-      const guessedWords = Array.from(guessedWordSet);
+    /**
+     * @type {string[]}
+     */
+    const yesterdayGuessedWords = yesterdayGuessedWordsString
+      ? JSON.parse(yesterdayGuessedWordsString)
+      : [];
 
-      let score = 0;
-      let totalPossibleScore = 0;
+    let score = 0;
+    let totalPossibleScore = 0;
 
-      const normalWords = [];
-      const panagrams = [];
+    const normalWords = [];
+    const panagrams = [];
 
-      for (const word of yesterdayGameData.validWords) {
-        const wordScore = this.getWordScore(word);
-        const isPanagram = wordScore > word.length;
-        const guessed = guessedWordSet.has(word);
+    const prevGuessedWordSet = new Set(yesterdayGuessedWords);
 
-        totalPossibleScore += wordScore;
-        if (guessed) {
-          score += wordScore;
-        }
-        const wordEntry = { word, guessed, isPanagram };
-        if (isPanagram) {
-          panagrams.push(wordEntry);
-        } else {
-          normalWords.push(wordEntry);
-        }
+    for (const word of validWords) {
+      const wordScore = this.getWordScore(word);
+      const isPanagram = wordScore > word.length;
+      const guessed = prevGuessedWordSet.has(word);
+
+      totalPossibleScore += wordScore;
+      if (guessed) {
+        score += wordScore;
       }
-
-      const achievedRankPercent = score / totalPossibleScore;
-
-      let achievedRankName = this.ranks[0].name;
-
-      for (let i = this.ranks.length - 1; i >= 0; --i) {
-        const rank = this.ranks[i];
-        if (achievedRankPercent >= rank.percent || i === 0) {
-          achievedRankName = rank.name;
-          break;
-        }
+      const wordEntry = { word, guessed, isPanagram };
+      if (isPanagram) {
+        panagrams.push(wordEntry);
+      } else {
+        normalWords.push(wordEntry);
       }
-
-      this.previousGame = {
-        centerLetter: yesterdayGameData.centerLetter,
-        outerLetters: yesterdayGameData.outerLetters,
-        words: panagrams.concat(normalWords),
-        score,
-        achievedRankName,
-        guessedWordCount: guessedWords.length,
-      };
     }
+
+    const achievedRankPercent = score / totalPossibleScore;
+
+    let achievedRankName = this.ranks[0].name;
+
+    for (let i = this.ranks.length - 1; i >= 0; --i) {
+      const rank = this.ranks[i];
+      if (achievedRankPercent >= rank.percent || i === 0) {
+        achievedRankName = rank.name;
+        break;
+      }
+    }
+
+    this.previousGame = {
+      timestamp: ts,
+      centerLetter,
+      outerLetters,
+      words: panagrams.concat(normalWords),
+      score,
+      achievedRankName,
+      guessedWordCount: prevGuessedWordSet.size,
+    };
   },
   async init() {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    this.timestamp = today.getTime();
+    const { ts, centerLetter, outerLetters, validWords } = await fetch(
+      "/words/en"
+    ).then((res) => res.json());
+
+    this.timestamp = ts;
+
+    this.updateLetterSet(centerLetter, outerLetters);
+    this.updateValidWords(validWords);
+    // Shuffle the letters once up front
+    this.shuffleOuterLetters();
 
     this.syncWithLocalStorage();
     this.getPreviousGame();
@@ -330,14 +320,14 @@ Alpine.store("game", {
       };
     }
 
-    if (!validWordSet.has(word)) {
+    if (!this.validWordSet.has(word)) {
       return {
         isValid: false,
         reason: "Not a valid word.",
       };
     }
 
-    if (guessedWordSet.has(word)) {
+    if (this.guessedWordSet.has(word)) {
       return {
         isValid: false,
         reason: "You've already guessed that word.",
@@ -400,8 +390,7 @@ Alpine.store("game", {
       this.validateWord(sanitizedWord);
 
     if (isValid) {
-      guessedWordSet.add(sanitizedWord);
-      this.guessedWords.push(sanitizedWord);
+      this.addGuessedWord(sanitizedWord);
       this.updateLocalStorage();
 
       this.updateScore(this.currentScore + score);
@@ -430,47 +419,16 @@ Alpine.store("game", {
     }
   },
   shuffleOuterLetters() {
-    this.outerLetters = shuffleArray(this.outerLetters);
+    for (let i = this.outerLetters.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [this.outerLetters[i], this.outerLetters[j]] = [
+        this.outerLetters[j],
+        this.outerLetters[i],
+      ];
+    }
   },
-  async getNewLetterSet(dateTimestamp) {
-    const [allWords, letterSets, letterSetWordIndices] = await loadWordData();
-    let getRandomNumber = seededRandom(dateTimestamp);
-
-    const letterSetIndex = Math.floor(getRandomNumber() * letterSets.length);
-
-    const unnormalizedLetterSet = letterSets[letterSetIndex];
-
-    // The center letter is marked by being capitalized, so find the first capitalized letter in the set
-    // (ie, aBcdefg -> center letter is B)
-    const centerLetterIndex = unnormalizedLetterSet.match(/[A-Z]/)?.index;
-
-    if (centerLetterIndex === undefined) {
-      throw new Error(`Invalid letter set ID "${unnormalizedLetterSet}"`);
-    }
-
-    // Normalize the letter set to all-lowercase
-    const letterSetString = unnormalizedLetterSet.toLowerCase();
-
-    const centerLetter = letterSetString[centerLetterIndex];
-    const outerLetters = shuffleArray(
-      (
-        letterSetString.slice(0, centerLetterIndex) +
-        letterSetString.slice(centerLetterIndex + 1)
-      ).split("")
-    );
-
-    const validWordIndices = letterSetWordIndices[letterSetIndex];
-
-    const validWords = new Array(validWordIndices.length);
-    for (let i = 0; i < validWordIndices.length; ++i) {
-      validWords[i] = allWords[validWordIndices[i]];
-    }
-
-    this.updateLetterSet(centerLetter, outerLetters);
-    this.updateValidWords(validWords);
-
-    this.guessedWords = [];
-    guessedWordSet.clear();
+  async getNewLetterSet() {
+    this.clearGuessedWords();
     this.updateScore(0);
 
     this.updateLocalStorage();
