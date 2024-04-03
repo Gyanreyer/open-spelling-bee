@@ -5377,8 +5377,6 @@ become
 becomes
 becoming
 becomingly
-becquerel
-becquerels
 bedaub
 bedaubed
 bedaubing
@@ -6203,7 +6201,9 @@ binds
 bindweed
 binge
 binged
+bingeing
 binges
+binging
 bingo
 binman
 binmen
@@ -19832,6 +19832,7 @@ disruptions
 disruptive
 disruptively
 disrupts
+diss
 dissatisfaction
 dissatisfied
 dissatisfies
@@ -20404,6 +20405,8 @@ donnybrooks
 donor
 donors
 dons
+donut
+donuts
 doodad
 doodads
 doodah
@@ -21063,6 +21066,7 @@ drywall
 dual
 dualism
 duality
+dually
 dubbed
 dubber
 dubbers
@@ -22757,6 +22761,12 @@ enriched
 enriches
 enriching
 enrichment
+enrobe
+enrober
+enrobers
+enrobes
+enrobed
+enrobing
 enroll
 enrolled
 enrolling
@@ -24687,6 +24697,7 @@ fakes
 faking
 fakir
 fakirs
+falafel
 falcon
 falconer
 falconers
@@ -46407,6 +46418,7 @@ ouch
 ought
 ounce
 ounces
+ouroboros
 ours
 ourselves
 oust
@@ -47709,6 +47721,8 @@ panicked
 panicking
 panicky
 panics
+panini
+paninis
 panned
 pannier
 panniers
@@ -49539,8 +49553,6 @@ phonetically
 phonetician
 phoneticians
 phonetics
-phoneyed
-phoneying
 phonic
 phonically
 phonics
@@ -66276,6 +66288,8 @@ stutterer
 stutterers
 stuttering
 stutters
+stye
+styes
 style
 styled
 styles
@@ -68137,8 +68151,10 @@ tanneries
 tanners
 tannery
 tannest
+tannic
 tannin
 tanning
+tannins
 tans
 tansy
 tantalization
@@ -76842,6 +76858,8 @@ wonks
 wonky
 wont
 wonted
+wonton
+wontons
 wood
 woodbine
 woodblock
