@@ -1,4 +1,6 @@
-const cacheName = "open-spelling-bee-1.4.0";
+const cacheName = "open-spelling-bee-1.4.1";
+
+const wordDataPathname = "/words/en";
 
 self.addEventListener("install", (e) => {
   // The promise that skipWaiting() returns can be safely ignored.
@@ -18,21 +20,50 @@ self.addEventListener("install", (e) => {
 });
 
 self.addEventListener("activate", (e) => {
+  // Claim all clients immediately, so the service worker can control
+  // initial requests
+  self.clients.claim();
+
   // Clean up cached requests from previous versions
   e.waitUntil(
     Promise.all([
-      // Claim all clients immediately, so the service worker can control
-      // initial requests
-      self.clients.claim(),
-      caches.keys().then((keyList) => {
-        return Promise.all(
+      caches.keys().then((keyList) =>
+        Promise.all(
           keyList.map((key) => {
             if (key !== cacheName) {
-              return caches.delete(key);
+              caches.delete(key);
             }
           })
-        );
-      }),
+        )
+      ),
+      caches.open(cacheName).then((cache) =>
+        cache.keys().then((requests) => {
+          // Delete all cached word data requests from days other than today and yesterday
+          const date = new Date();
+          date.setUTCHours(0, 0, 0, 0);
+
+          const todayTimestampString = date.getTime().toString();
+          date.setDate(date.getDate() - 1);
+          const yesterdayTimestampString = date.getTime().toString();
+
+          return Promise.all(
+            requests.map((request) => {
+              const requestURL = new URL(request.url);
+              if (requestURL.pathname === wordDataPathname) {
+                const requestTimestamp = requestURL.searchParams.get("t");
+                if (
+                  requestTimestamp === todayTimestampString ||
+                  requestTimestamp === yesterdayTimestampString
+                ) {
+                  return;
+                }
+
+                return cache.delete(request);
+              }
+            })
+          );
+        })
+      ),
     ])
   );
 });
@@ -45,7 +76,7 @@ self.addEventListener("fetch", (e) => {
     return;
   }
 
-  if (requestURL.pathname === "/words/en") {
+  if (requestURL.pathname === wordDataPathname) {
     return e.respondWith(handleWordDataRequest(requestURL));
   }
 
