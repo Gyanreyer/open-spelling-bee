@@ -289,14 +289,14 @@ Alpine.store("game", {
     this.shuffleOuterLetters();
 
     this.syncWithLocalStorage();
-    this.getPreviousGame();
-    this.cleanUpLocalStorage();
-
     window.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "visible") {
         this.syncWithLocalStorage();
       }
     });
+
+    await this.getPreviousGame();
+    this.cleanUpLocalStorage();
   },
   validateWord(word) {
     if (word.length < 4) {

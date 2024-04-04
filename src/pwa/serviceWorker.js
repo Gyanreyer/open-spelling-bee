@@ -1,4 +1,4 @@
-const cacheName = "open-spelling-bee-1.4.2";
+const cacheName = "open-spelling-bee-1.4.3";
 
 const wordDataPathname = "/words/en";
 
