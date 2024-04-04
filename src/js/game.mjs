@@ -1,13 +1,13 @@
 const GENIUS_PERCENT_THRESHOLD = 0.7;
 
 /**
- * @param {number} timestamp
+ * @param {string} timestamp
  * @returns {string}
  */
-const getLocalStorageKey = (timestamp) => `${timestamp.toString()}-v2`;
+const getLocalStorageKey = (timestamp) => `${timestamp}-v2`;
 
 Alpine.store("game", {
-  timestamp: 0,
+  timestamp: null,
   centerLetter: "",
   outerLetters: new Array(6).fill(""),
   validWordSet: new Set(),

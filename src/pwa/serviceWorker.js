@@ -1,4 +1,4 @@
-const cacheName = "open-spelling-bee-1.4.1";
+const cacheName = "open-spelling-bee-1.4.2";
 
 const wordDataPathname = "/words/en";
 
@@ -18,6 +18,15 @@ self.addEventListener("install", (e) => {
     )
   );
 });
+
+/**
+ * @param {Date} date
+ */
+const getDateTimestamp = (date) =>
+  `${date.getFullYear()}${date.getMonth().toString().padStart(2, "0")}${date
+    .getDate()
+    .toString()
+    .padStart(2, "0")}`;
 
 self.addEventListener("activate", (e) => {
   // Claim all clients immediately, so the service worker can control
@@ -40,11 +49,10 @@ self.addEventListener("activate", (e) => {
         cache.keys().then((requests) => {
           // Delete all cached word data requests from days other than today and yesterday
           const date = new Date();
-          date.setUTCHours(0, 0, 0, 0);
+          const todayTimestampString = getDateTimestamp(date);
 
-          const todayTimestampString = date.getTime().toString();
           date.setDate(date.getDate() - 1);
-          const yesterdayTimestampString = date.getTime().toString();
+          const yesterdayTimestampString = getDateTimestamp(date);
 
           return Promise.all(
             requests.map((request) => {
@@ -112,7 +120,7 @@ async function handleWordDataRequest(requestURL) {
 
   // Set the timestamp to midnight of the current day, in UTC
   // to make sure everyone gets the same words for the day regardless of timezone
-  const dateTimestamp = date.setUTCHours(0, 0, 0, 0);
+  const dateTimestamp = getDateTimestamp(date);
 
   requestURL.searchParams.set("t", dateTimestamp);
 
@@ -150,6 +158,10 @@ async function handleWordDataRequest(requestURL) {
 
   const [allWords, letterSets, letterSetWordIndices] = fullWordData;
 
+  /**
+   * @param {number} seed
+   * @returns {number}
+   */
   const seededRandom = (seed) => {
     var t = seed + 0x6d2b79f5;
     t = Math.imul(t ^ (t >>> 15), t | 1);
@@ -158,7 +170,7 @@ async function handleWordDataRequest(requestURL) {
   };
 
   const letterSetIndex = Math.floor(
-    seededRandom(dateTimestamp) * letterSets.length
+    seededRandom(Number(dateTimestamp)) * letterSets.length
   );
 
   /** @type {string} */
